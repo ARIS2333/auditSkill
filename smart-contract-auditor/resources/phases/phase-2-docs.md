@@ -10,9 +10,10 @@ See `templates/codebase-report.md` for the full template, population guide (whic
 
 ## Inputs
 
-- **Phase 1 outputs:** `audit-output/phase-1-recon/structural-summary.md` (includes printer output index), raw printer outputs in `audit-output/phase-1-recon/printers/`
+- **Phase 1 output:** `audit-output/phase-1-recon/structural-summary.md` — your primary structural reference (compact tables for inheritance, function-modifier-state-write mappings, unguarded functions, storage layout, plus a printer output index for raw lookups)
 - **Phase 1 output:** `audit-output/phase-1-recon/preliminary-hypotheses.md` (structural-only hypothesis list to refine)
 - **Phase 1 output:** `audit-output/phase-1-recon/coverage-report.txt` (if tests exist)
+- **Phase 1 raw printers:** `audit-output/phase-1-recon/printers/` — only consult these when the structural summary does not contain the detail you need (e.g., full data-dependency chains, DOT graph traversal, per-function require conditions)
 - **Source code:** `.sol` files in scope
 
 ## Outputs
@@ -29,7 +30,7 @@ See `templates/codebase-report.md` for the full template, population guide (whic
 
 This document is a **living reference** — update it when Phase 4 code reading or Phase 5 PoC development reveals new information.
 
-**Context management:** Start each section by reading the Phase 1 structural summary for a quick orientation — the compact function reference and inheritance tree cover most lookups. Then read the specific raw printer file(s) listed in the template's "Read These Files Before Writing" column for full detail on that section. After writing each section to the codebase overview, subsequent sections can reference what you already wrote rather than re-reading the same raw printer data. This "structural summary → raw printer for detail → write section → move on" cycle keeps context manageable.
+**Context management:** The structural summary is your primary structural reference — it already contains the inheritance tree, function-modifier-state-write table, unguarded functions list, and storage layout. For each section of the codebase overview, start from the structural summary + code reading. Only fall back to raw printer files (via the printer output index in the structural summary §6) when you need detail the structural summary does not cover — e.g., full `data-dependency.txt` chains, DOT graph traversal for call paths, or per-function `require.txt` conditions. After writing each section, subsequent sections can reference what you already wrote. This "structural summary → code reading → raw printer only if needed → write section → move on" cycle keeps context manageable.
 
 ---
 

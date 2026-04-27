@@ -1,6 +1,6 @@
 # Codebase Documentation Report Template
 
-Use this template to produce a markdown document that enables developers to understand a protocol's architecture, user flows, and trust boundaries. Populate each section using Slither printer output (Phase 1) and code reading (Phase 2).
+Use this template to produce a markdown document that enables developers to understand a protocol's architecture, user flows, and trust boundaries. Populate each section using the Phase 1 structural summary as your primary structural reference, supplemented by code reading. Consult raw printer files only when the structural summary lacks the specific detail you need.
 
 Replace all `[bracketed placeholders]` with actual values. Delete sections that do not apply to the project. Every Mermaid diagram must have labeled edges.
 
@@ -8,27 +8,34 @@ Replace all `[bracketed placeholders]` with actual values. Delete sections that 
 
 ## How to Populate This Document
 
-This is NOT a reformatting of Slither printer output — you must go through the actual source code to fill in context that printers cannot provide (protocol purpose, user flows, fee logic, state transitions, trust assumptions). Use the printers as your guide and fact-checking source, not as your only input.
+This is NOT a reformatting of Slither printer output — you must go through the actual source code to fill in context that printers cannot provide (protocol purpose, user flows, fee logic, state transitions, trust assumptions). Use the structural summary as your structural guide and fact-checking source, and code reading as your primary input for protocol understanding.
 
-### Reading Printer Output Files
+### Using the Structural Summary
 
-All printer outputs live in `audit-output/phase-1-recon/printers/`. **For each section below, read the listed files fresh** — do not rely on memory from earlier reads. These files can be large, and misremembering a detail (e.g., which modifier guards a function) is a hallucination source.
+Your primary structural reference is **`audit-output/phase-1-recon/structural-summary.md`** — it already contains compact tables for the inheritance tree (§2), function-modifier-state-write mappings (§3), unguarded functions (§4), and storage layout (§5). Start each section from the structural summary + code reading.
 
-| Report Section | Read These Files Before Writing | Code Reading? |
-|---------------|-------------------------------|---------------|
-| System Overview | — | Yes — README, code comments, contract names |
-| Project Structure | — | Light — `ls`/`find` + annotate |
-| Architecture | `printers/inheritance-graph*.dot`, `printers/call-graph*.dot` | Light — verify relationships |
-| Contract Inventory | `printers/human-summary.txt`, `printers/inheritance.txt` | Light — add purpose descriptions |
-| Contract Deep Dives | `printers/function-summary.txt`, `printers/variable-order.txt`, `printers/entry-points.txt`, `printers/modifiers.txt` | Yes — understand function logic |
-| User Flows | `printers/call-graph*.dot`, `printers/function-summary.txt` | Yes — trace complete flows |
-| Access Control Matrix | `printers/vars-and-auth.txt`, `printers/modifiers.txt` | Yes — verify guard logic |
-| Value Flow | `printers/function-summary.txt` (filter: payable, transfer, mint, burn) | Yes — trace token/ETH movement |
-| State Machine | `printers/not-pausable.txt` | Yes — identify state transitions |
-| External Dependencies | `printers/call-graph*.dot`, `printers/data-dependency.txt` | Yes — identify failure modes |
-| Upgrade & Migration | `printers/variable-order.txt` | Yes — verify storage layout |
-| Key Invariants | Synthesized from hypothesis list + code reading | Yes — identify protocol rules |
-| Known Risks & Trust Assumptions | Code reading (updated with Phase 3 detector findings) | Yes — assess trust boundaries |
+**Only fall back to raw printer files** (in `audit-output/phase-1-recon/printers/`) when the structural summary does not contain the detail you need. The structural summary's Printer Output Index (§6) tells you which raw file to consult. Common reasons to access raw printers:
+- DOT graph files (`inheritance-graph*.dot`, `call-graph*.dot`) for visual traversal of call paths or inheritance
+- `data-dependency.txt` for full input-to-state-variable dependency chains
+- `require.txt` for per-function require/assert conditions
+- `not-pausable.txt` for the full list of functions missing `whenNotPaused`
+- Per-contract printer splits for large codebases (>15 contracts)
+
+| Report Section | Structural Summary Sections | Raw Printer Fallback (if needed) | Code Reading? |
+|---------------|---------------------------|--------------------------------|---------------|
+| System Overview | — | — | Yes — README, code comments, contract names |
+| Project Structure | — | — | Light — `ls`/`find` + annotate |
+| Architecture | §2 Inheritance Tree | `inheritance-graph*.dot`, `call-graph*.dot` | Light — verify relationships |
+| Contract Inventory | §1 Codebase Snapshot, §2 | `human-summary.txt`, `inheritance.txt` | Light — add purpose descriptions |
+| Contract Deep Dives | §3 Entry Points & Access Control, §5 Storage Layout | `function-summary.txt`, `variable-order.txt`, `entry-points.txt`, `modifiers.txt` | Yes — understand function logic |
+| User Flows | §3 | `call-graph*.dot`, `function-summary.txt` | Yes — trace complete flows |
+| Access Control Matrix | §3, §4 Unguarded Functions | `vars-and-auth.txt`, `modifiers.txt` | Yes — verify guard logic |
+| Value Flow | §3 (filter: payable, transfer, mint, burn) | `function-summary.txt` | Yes — trace token/ETH movement |
+| State Machine | — | `not-pausable.txt` | Yes — identify state transitions |
+| External Dependencies | — | `call-graph*.dot`, `data-dependency.txt` | Yes — identify failure modes |
+| Upgrade & Migration | §5 Storage Layout | `variable-order.txt` | Yes — verify storage layout |
+| Key Invariants | Synthesized from hypothesis list + code reading | — | Yes — identify protocol rules |
+| Known Risks & Trust Assumptions | Code reading (updated with Phase 3 detector findings) | — | Yes — assess trust boundaries |
 
 ---
 
@@ -410,12 +417,12 @@ Useful for reading raw calldata in multisig transactions and timelock queues.
 
 This document builds the mental model for the entire audit. Hallucinations here propagate into every subsequent phase. Before marking the document complete:
 
-**Structural verification (re-read each printer file to cross-check):**
+**Structural verification (cross-check against structural summary; consult raw printer files only if the summary lacks the needed detail):**
 
-- [ ] Every contract relationship in the Architecture diagram exists in `printers/inheritance-graph*.dot` and `printers/call-graph*.dot` (or is justified by code reading of delegatecall/interface calls)
-- [ ] Every function listed in Contract Deep Dives matches `printers/function-summary.txt` — visibility, modifiers, and state variables read/written are correct
-- [ ] Every access control claim in the Access Control Matrix matches `printers/vars-and-auth.txt` and `printers/modifiers.txt`
-- [ ] Storage layout in Upgrade & Migration matches `printers/variable-order.txt`
+- [ ] Every contract relationship in the Architecture diagram is consistent with the structural summary §2 (Inheritance Tree) — consult `printers/inheritance-graph*.dot` and `printers/call-graph*.dot` only for relationships not captured in the summary (e.g., delegatecall/interface calls)
+- [ ] Every function listed in Contract Deep Dives matches the structural summary §3 (Entry Points & Access Control) — visibility, modifiers, and state variables read/written are correct. Consult `printers/function-summary.txt` only for functions not in the summary table.
+- [ ] Every access control claim in the Access Control Matrix is consistent with the structural summary §3 and §4 — consult `printers/vars-and-auth.txt` and `printers/modifiers.txt` only for details beyond the summary
+- [ ] Storage layout in Upgrade & Migration matches the structural summary §5 — consult `printers/variable-order.txt` only for full slot-level detail
 
 **Flow verification (cross-check against code or Foundry traces):**
 

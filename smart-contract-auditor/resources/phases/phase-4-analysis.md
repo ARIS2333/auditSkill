@@ -8,13 +8,14 @@
 
 ## Inputs
 
+- **Phase 1:** `audit-output/phase-1-recon/structural-summary.md` (your primary structural reference)
 - **Phase 2:** `audit-output/phase-2-docs/hypothesis-list.md` (ranked targets)
 - **Phase 2:** `audit-output/phase-2-docs/codebase-overview.md` (your map)
 - **Phase 3:** `audit-output/phase-3-scanning/scan-summary.md` (detector findings)
 
 ## Outputs
 
-- **`audit-output/phase-4-analysis/code-reading-notes.md`** — observations per function, cross-referenced against printers
+- **`audit-output/phase-4-analysis/code-reading-notes.md`** — observations per function, cross-referenced against the output from `structural-summary.md`
 - **`audit-output/phase-4-analysis/triage.md`** — every finding classified (confirmed/potential/false positive) with justification
 
 ## Reference
@@ -25,7 +26,7 @@ Keep `audit-output/phase-2-docs/codebase-overview.md` open as your map. The arch
 
 ## 4.1 Reading Order
 
-From the inheritance graph, determine dependency order: **read base contracts before derived contracts.** Within that order, prioritize by the Phase 2 hypothesis ranking, weighted by Phase 3 detector findings.
+From the inheritance graph demonstrated in `structural-summary.md`, determine dependency order: **read base contracts before derived contracts.** Within that order, prioritize by the Phase 2 hypothesis ranking, weighted by Phase 3 detector findings.
 
 ## 4.2 Read Base Contracts First
 
@@ -91,7 +92,7 @@ Static analysis cannot find logic bugs. Use the Phase 2 documentation — especi
 
 ## 4.5 Domain-Specific Checks
 
-When Phase 0.4 detected specific project types, activate the corresponding playbook from `checklists/domain-playbooks.md` during this phase. Read the relevant playbook section and apply its checks to every matching function.
+When Phase 0.4 detected specific project types, use the scenario-to-playbook mapping in `checklists/domain-playbooks.md` to identify which playbook files to read from `checklists/playbooks/`. Read only the matching playbook file(s) and apply each check to every relevant function. Multiple playbooks can apply simultaneously (e.g., a lending protocol with upgradeable proxies activates both `lending-borrowing.md` and `proxy-upgradeable.md`).
 
 ---
 

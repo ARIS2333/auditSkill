@@ -24,7 +24,8 @@ You are an ethical smart contract security auditor for EVM-compatible blockchain
 | `resources/templates/sherlock.md` | Sherlock submission format (severity rules, dedup model, pre-conditions) |
 | `resources/checklists/` | Security reference checklists |
 | `resources/checklists/non-standard-tokens.md` | 14 non-standard ERC20 token behaviors that break protocol assumptions |
-| `resources/checklists/domain-playbooks.md` | Domain-specific attack checklists for 10 protocol types |
+| `resources/checklists/domain-playbooks.md` | Index mapping Phase 0.4 scenarios to individual playbook files |
+| `resources/checklists/playbooks/` | Individual domain-specific attack checklists (one per protocol type — read only the ones matching detected scenarios) |
 | `resources/phases/` | Detailed per-phase audit instructions (read as needed) |
 
 | Situation | Read This |
@@ -37,7 +38,7 @@ You are an ethical smart contract security auditor for EVM-compatible blockchain
 | Writing structural summary | `resources/templates/structural-summary.md` |
 | Writing codebase documentation | `resources/templates/codebase-report.md` |
 | Auditing token interactions | `resources/checklists/non-standard-tokens.md` |
-| Checking domain-specific attack vectors | `resources/checklists/domain-playbooks.md` |
+| Checking domain-specific attack vectors | `resources/checklists/domain-playbooks.md` (index) → `resources/checklists/playbooks/*.md` (per domain) |
 | Formatting a finding for submission | `resources/templates/code4rena.md` or `resources/templates/sherlock.md` (per selected platform) |
 
 **Official repos** (consult for persistent errors or syntax verification):
@@ -141,7 +142,7 @@ audit-output/
 When working with large codebases, the raw printer outputs and source files can exceed what fits in a single context window. Follow these principles:
 
 1. **Each phase builds a progressively richer summary.** Phase 1 extracts key structural data from raw printers into the structural summary (compact tables). Phase 2 synthesizes printer data + code reading into the codebase overview. Phases 3-6 should primarily use the Phase 2 codebase overview as their reference — not the raw Phase 1 printer files. Only go back to raw printer files for specific spot-checks.
-2. **Phase 2 still reads raw printer files** — but one at a time, per section. Read the printer file listed for the current section, extract what you need, write that section of the codebase overview, then move on. Do not try to hold all printer files in context simultaneously.
+2. **Phase 2 uses the structural summary as its primary structural input** — not raw printer files. The structural summary already contains the inheritance tree, function-modifier-state-write table, unguarded functions, and storage layout. Only fall back to raw printer files (via the printer output index) when you need detail the structural summary does not cover (e.g., full data-dependency chains, DOT graph traversal, per-function require conditions).
 3. **Per-contract printer files for large codebases.** If the project has more than 15 contracts, split large printer outputs (especially `function-summary.txt`) into per-contract files inside `audit-output/phase-1-recon/printers/per-contract/`. This allows later phases to read only the contracts they need.
 4. **Work incrementally.** When context is constrained, process one contract or one section at a time. Write intermediate results to disk before moving to the next. Do not attempt to hold the entire codebase model in a single pass.
 5. **Re-read, don't recall.** When a later phase needs data from an earlier phase, open and read the file — do not rely on memory of what it contained. This is both an anti-hallucination measure and a context management strategy.
@@ -172,7 +173,7 @@ Run 13 Slither printers, each saved to its own file. Validate that all printer o
 **File:** `resources/phases/phase-2-docs.md`
 **Gate:** All 13 sections from the template populated. Fact-Checking Checklist passes completely. Hypothesis list produced.
 
-Dive into source code using Phase 1 as your guide. Proactively re-read printer output files throughout — they are large and you should consult them fresh for each section rather than relying on memory. Produce the comprehensive codebase documentation using `resources/templates/codebase-report.md`. At the end, refine the Phase 1 preliminary hypothesis list with code-level understanding into a ranked attack hypothesis list informed by both structural data and code reading. This document becomes the shared reference for all subsequent phases.
+Dive into source code using Phase 1's structural summary as your primary structural reference — it contains compact tables for inheritance, access control, unguarded functions, and storage layout. Only consult raw printer files when the structural summary lacks the specific detail you need. Produce the comprehensive codebase documentation using `resources/templates/codebase-report.md`. At the end, refine the Phase 1 preliminary hypothesis list with code-level understanding into a ranked attack hypothesis list informed by both structural data and code reading. This document becomes the shared reference for all subsequent phases.
 
 **Checkpoint:** Present the codebase overview and refined hypothesis list to the user. Pause and wait for confirmation before proceeding to Phase 3. Default behavior is to pause.
 
@@ -186,7 +187,7 @@ Run Slither detectors (full scan, high-impact focused, scenario-specific). Conte
 **File:** `resources/phases/phase-4-analysis.md`
 **Gate:** All critical/high functions read. Every High/Medium finding classified with written justification.
 
-Deep security-focused code reading guided by Phases 1-3. Use the Phase 2 codebase overview document as your primary reference — read specific sections (architecture, access control, user flows) rather than re-reading raw Phase 1 printer files. Apply the 24-item code reading checklist and adversarial thinking framework. Activate domain-specific playbooks from `resources/checklists/domain-playbooks.md`. Classify findings as confirmed/potential/false positive. Update the Phase 2 document with new discoveries.
+Deep security-focused code reading guided by Phases 1-3. Use the Phase 2 codebase overview document as your primary reference — read specific sections (architecture, access control, user flows) rather than re-reading raw Phase 1 printer files. Apply the 24-item code reading checklist and adversarial thinking framework. Activate domain-specific playbooks from `resources/checklists/playbooks/` (use the index in `resources/checklists/domain-playbooks.md` to select which playbooks match the detected scenarios). Classify findings as confirmed/potential/false positive. Update the Phase 2 document with new discoveries.
 
 #### Phase 5: PoC & Finding Documentation
 **File:** `resources/phases/phase-5-findings.md`

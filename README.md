@@ -1,5 +1,7 @@
 # Smart Contract Auditor Skill
 
+**[English](README.md) | [中文](README_CN.md)**
+
 A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) custom skill that turns Claude into a structured smart contract security auditor. It uses **Slither** for static analysis and **Foundry** for Proof-of-Concept exploit development, following a 7-phase workflow designed to minimize AI hallucination.
 
 ## Why This Skill?
@@ -23,41 +25,96 @@ AI agents hallucinate when auditing smart contracts — they misread inheritance
 
 ### Prerequisites
 
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI installed
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI or desktop app installed
 - [Foundry](https://getfoundry.sh/) installed (`forge`, `cast`, `anvil`)
 - [Slither](https://github.com/crytic/slither) installed (`pip install slither-analyzer` or `uv tool install slither-analyzer`)
 
-### Setup
-
-Copy the `smart-contract-auditor` folder into your Claude Code skills directory:
+Install Foundry:
 
 ```bash
-cp -r smart-contract-auditor ~/.claude/skills/smart-contract-auditor
+curl -L https://foundry.paradigm.xyz | bash
+foundryup
 ```
 
-Or symlink it:
+Install Slither:
 
 ```bash
-ln -s /path/to/smart-contract-auditor ~/.claude/skills/smart-contract-auditor
+pip install slither-analyzer
+# or
+uv tool install slither-analyzer
 ```
 
-The skill will appear as `/smart-contract-auditor` in Claude Code.
+### Option A: Global Install (Recommended — All Projects)
+
+Install once, use in every project you open with Claude Code:
+
+```bash
+# Clone the repo
+git clone https://github.com/YOUR_USERNAME/smart-contract-auditor.git
+
+# Copy the skill folder to Claude Code's global skills directory
+cp -r smart-contract-auditor/smart-contract-auditor ~/.claude/skills/smart-contract-auditor
+```
+
+Or symlink it so updates to the repo are reflected automatically:
+
+```bash
+ln -s $(pwd)/smart-contract-auditor/smart-contract-auditor ~/.claude/skills/smart-contract-auditor
+```
+
+### Option B: Project-Level Install (Single Project Only)
+
+Install into a specific audit project. Useful if you want to commit the skill alongside the project so team members get it automatically:
+
+```bash
+# In your audit project root
+mkdir -p .claude/skills
+cp -r /path/to/smart-contract-auditor/smart-contract-auditor .claude/skills/smart-contract-auditor
+```
+
+### Verify Installation
+
+Open Claude Code in any project (for global install) or the target project (for project-level install):
+
+1. Type `/` — you should see `smart-contract-auditor` in the autocomplete menu
+2. Or type `/smart-contract-auditor` directly
+
+If it doesn't appear, check that the folder structure is correct:
+
+```
+~/.claude/skills/smart-contract-auditor/    # global
+# or
+.claude/skills/smart-contract-auditor/      # project-level
+├── SKILL.md                                # required — must exist
+└── resources/                              # reference docs and templates
+    ├── slither-audit-guide.md
+    ├── foundry-audit-guide.md
+    ├── poc-template.md
+    └── templates/
+        └── code4rena.md
+```
 
 ## Usage
 
-In Claude Code, invoke the skill on any smart contract project:
+### Start an Audit
+
+Open Claude Code in your target smart contract project and invoke the skill:
 
 ```
 /smart-contract-auditor
 ```
 
-Or describe what you need:
+Or describe what you need in natural language — Claude will auto-detect the skill:
 
 ```
 Audit this Foundry project for security vulnerabilities
 ```
 
-The agent will walk through all 7 phases, starting with environment setup and ending with a formatted report.
+```
+Run slither on this codebase and write PoCs for any critical findings
+```
+
+The agent will walk through all 7 phases: environment setup, structural analysis, attack surface mapping, code reading, vulnerability scanning, triage, PoC development, and report generation.
 
 ### Platform Selection
 

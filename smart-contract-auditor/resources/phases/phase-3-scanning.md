@@ -29,7 +29,7 @@ All detectors, exclude dependencies and test/script paths:
 ```bash
 slither . --foundry-out-directory out \
   --exclude-dependencies \
-  --filter-paths "lib|node_modules|test|script" \
+  --filter-paths 'lib|node_modules|test|script' \
   --json audit-output/phase-3-scanning/slither-full-report.json
 ```
 
@@ -39,7 +39,7 @@ Reentrancy, arbitrary-send, delegatecall, suicidal, unprotected-upgrade, uniniti
 
 ```bash
 slither . --foundry-out-directory out \
-  --detect reentrancy-eth,reentrancy-balance,reentrancy-no-eth,token-reentrancy,arbitrary-send-eth,arbitrary-send-erc20,arbitrary-send-erc20-permit,controlled-delegatecall,controlled-array-length,delegatecall-loop,suicidal,unprotected-upgrade,uninitialized-state,uninitialized-storage,shadowing-state,unchecked-transfer,weak-prng,msg-value-loop,msg-value-in-nonpayable \
+  --detect reentrancy-eth,reentrancy-no-eth,arbitrary-send-eth,arbitrary-send-erc20,arbitrary-send-erc20-permit,controlled-delegatecall,controlled-array-length,delegatecall-loop,suicidal,unprotected-upgrade,uninitialized-state,uninitialized-storage,shadowing-state,unchecked-transfer,weak-prng,msg-value-loop \
   --json audit-output/phase-3-scanning/slither-high-report.json
 ```
 
@@ -62,7 +62,7 @@ Exclude informational/optimization, or exclude specific low-value detectors:
 slither . --foundry-out-directory out \
   --exclude-informational --exclude-optimization \
   --exclude-dependencies \
-  --filter-paths "lib|node_modules|test|script" \
+  --filter-paths 'lib|node_modules|test|script' \
   --json audit-output/phase-3-scanning/slither-clean-report.json
 ```
 

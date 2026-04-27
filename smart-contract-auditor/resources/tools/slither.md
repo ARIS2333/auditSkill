@@ -141,10 +141,8 @@ slither file.ast.json
 | `--exclude-medium` | Skip all medium severity findings |
 | `--exclude-high` | Skip all high severity findings |
 | `--exclude-optimization` | Skip all optimization findings |
-| `--exclude-location` | Exclude file location from detector messages |
 | `--list-detectors` | List all available detectors |
 | `--show-ignored-findings` | Show findings even if suppressed |
-| `--warn-unused-ignores` | Warn about `slither-disable` comments that suppress nothing |
 
 ### Printer Control
 
@@ -176,7 +174,7 @@ slither file.ast.json
 
 | Flag | Description |
 |------|-------------|
-| `--filter-paths <regex>` | Exclude results from matching paths (e.g., `mocks/\|test/`) |
+| `--filter-paths <regex>` | Exclude results from matching paths (e.g., `'mocks/\|test/'`) — always use single quotes around the regex to prevent shell pipe interpretation |
 | `--include-paths <regex>` | Include only results from matching paths (opposite of `--filter-paths`) |
 
 ### CI / Exit Code Control
@@ -222,15 +220,14 @@ slither file.ast.json
 |------|-------------|
 | `--solc-ast` | Provide the contract as a JSON AST |
 | `--change-line-prefix <char>` | Change the line prefix for displayed source code (default: `#`) |
-| `--timing` | Print phase-level timing breakdown |
 
 ---
 
 ## 4. Vulnerability Detection (Detectors)
 
-Slither includes **103** built-in detectors (excluding the example `backdoor` detector). Below is the complete list organized by impact severity, with all classifications verified against the source code.
+Slither includes **99** built-in detectors (excluding the example `backdoor` detector). Below is the complete list organized by impact severity, with all classifications verified against slither 0.11.4.
 
-### High Impact Detectors (30)
+### High Impact Detectors (28)
 
 | Detector ID | Description | Confidence |
 |-------------|-------------|------------|
@@ -246,13 +243,11 @@ Slither includes **103** built-in detectors (excluding the example `backdoor` de
 | `incorrect-exp` | Bitwise XOR `^` used instead of exponentiation `**` | Medium |
 | `incorrect-return` | Assembly `return` halts execution unexpectedly | Medium |
 | `incorrect-shift` | Reversed shift operation parameters | High |
-| `msg-value-in-nonpayable` | `msg.value` used in non-payable function | High |
 | `msg-value-loop` | `msg.value` used inside loop (double-spend risk) | Medium |
 | `multiple-constructors` | Multiple constructor definitions (old + new syntax) | High |
 | `name-reused` | Duplicate contract names prevent correct artifact generation | High |
 | `protected-vars` | Protected variables lack proper access control | High |
 | `public-mappings-nested` | Public nested mapping returns wrong values (pre-0.5) | High |
-| `reentrancy-balance` | Balance check after external call (reentrancy) | Medium |
 | `reentrancy-eth` | Reentrancy vulnerability with ETH transfer | Medium |
 | `return-leave` | `return` used instead of `leave` in assembly | Medium |
 | `rtlo` | Right-to-left override character manipulation | High |
@@ -265,7 +260,7 @@ Slither includes **103** built-in detectors (excluding the example `backdoor` de
 | `unprotected-upgrade` | Upgradeable implementation can be destroyed | High |
 | `weak-prng` | Weak PRNG from `block.timestamp` / `block.number` | Medium |
 
-### Medium Impact Detectors (29)
+### Medium Impact Detectors (28)
 
 | Detector ID | Description | Confidence |
 |-------------|-------------|------------|
@@ -291,7 +286,6 @@ Slither includes **103** built-in detectors (excluding the example `backdoor` de
 | `shadowing-abstract` | State variable shadows abstract contract | High |
 | `tautological-compare` | Variable compared to itself | High |
 | `tautology` | Tautological or contradictory expression | High |
-| `token-reentrancy` | Reentrancy via token callback (e.g., ERC777) | Medium |
 | `tx-origin` | `tx.origin` used for authorization | Medium |
 | `unchecked-lowlevel` | Unchecked low-level call return value | Medium |
 | `unchecked-send` | Unchecked `send` return value | Medium |
@@ -321,7 +315,7 @@ Slither includes **103** built-in detectors (excluding the example `backdoor` de
 | `variable-scope` | Variable used before declaration | High |
 | `void-cst` | Constructor call with no implementation | High |
 
-### Informational Detectors (22)
+### Informational Detectors (21)
 
 | Detector ID | Description | Confidence |
 |-------------|-------------|------------|
@@ -345,7 +339,6 @@ Slither includes **103** built-in detectors (excluding the example `backdoor` de
 | `too-many-digits` | Numeric literals with excessive digits | Medium |
 | `unimplemented-functions` | Unimplemented interface functions | High |
 | `unindexed-event-address` | Event `address` parameters not indexed | High |
-| `unused-import` | Unused import statement | High |
 | `unused-state` | Unused state variables | High |
 
 ### Optimization Detectors (5)
@@ -362,13 +355,12 @@ Slither includes **103** built-in detectors (excluding the example `backdoor` de
 
 ## 5. Contract Inspection (Printers)
 
-Slither includes **28** printers that extract structural information from contracts.
+Slither includes **27** printers that extract structural information from contracts.
 
 ### Complete Printer List
 
 | Printer | Command | Output |
 |---------|---------|--------|
-| `c3-linearization` | `--print c3-linearization` | Print C3 linearization order for each contract |
 | `call-graph` | `--print call-graph` | Export call graph as DOT file |
 | `cfg` | `--print cfg` | Export control flow graph per function |
 | `cheatcode` | `--print cheatcode` | Print usage of Foundry cheatcodes in the code |
@@ -407,9 +399,6 @@ slither . --print inheritance-graph
 
 # Text-based inheritance summary
 slither . --print inheritance
-
-# C3 linearization order
-slither . --print c3-linearization
 
 # For Foundry projects
 slither . --print inheritance-graph --foundry-out-directory out
@@ -515,14 +504,14 @@ Runs all 103 detectors, outputs structured JSON.
 
 ```bash
 slither . --foundry-out-directory out \
-  --detect reentrancy-eth,reentrancy-balance,arbitrary-send-eth,arbitrary-send-erc20,arbitrary-send-erc20-permit,controlled-delegatecall,controlled-array-length,delegatecall-loop,suicidal,unprotected-upgrade,uninitialized-state,uninitialized-storage,shadowing-state,unchecked-transfer,weak-prng,msg-value-loop,msg-value-in-nonpayable,incorrect-return,return-leave,incorrect-exp,storage-array
+  --detect reentrancy-eth,arbitrary-send-eth,arbitrary-send-erc20,arbitrary-send-erc20-permit,controlled-delegatecall,controlled-array-length,delegatecall-loop,suicidal,unprotected-upgrade,uninitialized-state,uninitialized-storage,shadowing-state,unchecked-transfer,weak-prng,msg-value-loop,incorrect-return,return-leave,incorrect-exp,storage-array
 ```
 
 ### Reentrancy-Focused Scan
 
 ```bash
 slither . --foundry-out-directory out \
-  --detect reentrancy-eth,reentrancy-no-eth,reentrancy-balance,reentrancy-benign,reentrancy-events,reentrancy-unlimited-gas,token-reentrancy
+  --detect reentrancy-eth,reentrancy-no-eth,reentrancy-benign,reentrancy-events,reentrancy-unlimited-gas
 ```
 
 ### Access Control Scan
@@ -543,7 +532,7 @@ slither . --foundry-out-directory out \
 
 ```bash
 slither . --foundry-out-directory out \
-  --exclude naming-convention,unused-state,solc-version,unused-import,dead-code,too-many-digits,pragma,assembly,low-level-calls,boolean-equal
+  --exclude naming-convention,unused-state,solc-version,dead-code,too-many-digits,pragma,assembly,low-level-calls,boolean-equal
 ```
 
 ### Exclude Entire Severity Tiers
@@ -563,7 +552,7 @@ slither . --foundry-out-directory out \
 ```bash
 slither . --foundry-out-directory out \
   --exclude-dependencies \
-  --filter-paths "lib|node_modules|openzeppelin"
+  --filter-paths 'lib|node_modules|openzeppelin'
 ```
 
 ### Include Only Specific Paths
@@ -608,7 +597,6 @@ balances[msg.sender] = 0;
 // slither-disable-end reentrancy-eth
 ```
 
-Use `--warn-unused-ignores` to detect stale suppression comments that no longer match any finding.
 
 ### Security Annotations
 
@@ -1141,7 +1129,7 @@ slither . --print loc --foundry-out-directory out
 
 ```bash
 # 4. Map inheritance hierarchy
-slither . --print inheritance-graph,c3-linearization --foundry-out-directory out
+slither . --print inheritance-graph,inheritance --foundry-out-directory out
 
 # 5. Enumerate attack surface (entry points + function summary)
 slither . --print entry-points,function-summary --foundry-out-directory out
@@ -1166,11 +1154,11 @@ slither . --print cheatcode --foundry-out-directory out
 slither . --foundry-out-directory out \
   --json slither-full-report.json \
   --exclude-dependencies \
-  --filter-paths "lib|test|script"
+  --filter-paths 'lib|test|script'
 
 # 11. High-impact focused re-scan
 slither . --foundry-out-directory out \
-  --detect reentrancy-eth,reentrancy-balance,reentrancy-no-eth,token-reentrancy,arbitrary-send-eth,arbitrary-send-erc20,controlled-delegatecall,suicidal,unprotected-upgrade,uninitialized-state,uninitialized-storage,unchecked-transfer,weak-prng,msg-value-in-nonpayable \
+  --detect reentrancy-eth,reentrancy-no-eth,arbitrary-send-eth,arbitrary-send-erc20,controlled-delegatecall,suicidal,unprotected-upgrade,uninitialized-state,uninitialized-storage,unchecked-transfer,weak-prng,msg-value-loop \
   --json slither-high-severity.json
 
 # 12. Upgradeability check (if proxy pattern)

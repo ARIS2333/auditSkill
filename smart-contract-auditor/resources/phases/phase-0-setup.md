@@ -41,7 +41,13 @@ Grep the codebase for patterns that activate conditional checks in later phases:
 
 ## 0.5 Establish Slither Base Flags
 
-For Foundry projects: `slither . --foundry-out-directory out --exclude-dependencies --filter-paths "lib|node_modules|test|script"`
+Determine which flags to append to every `slither` command. For Foundry projects, the standard flags are:
+
+```
+--foundry-out-directory out --exclude-dependencies --filter-paths 'lib|node_modules|test|script'
+```
+
+**Important:** Do NOT store the full command in a shell variable and then execute the variable. Always write out the complete `slither` command directly each time. Shell variable expansion mangles multi-word arguments and pipe characters.
 
 ## 0.6 Select Submission Platform
 

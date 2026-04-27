@@ -4,7 +4,16 @@
 
 **Gate:** You can answer every question in the table below without reading code, AND you have a ranked list of suspicious functions/contracts with specific reasons from printer output.
 
-See `tools/slither.md` §5 for full printer syntax. Batch all printers in one command: `slither . --print p1,p2,p3,... --foundry-out-directory out`
+See `tools/slither.md` §5 for full printer syntax. Batch all printers in one command — always write the full command directly (never store it in a shell variable):
+
+```bash
+slither . --print p1,p2,p3,... \
+  --foundry-out-directory out \
+  --exclude-dependencies \
+  --filter-paths 'lib|node_modules|test|script'
+```
+
+**Note:** The `--filter-paths` value uses `|` for regex alternation — it MUST be wrapped in single quotes to prevent the shell from interpreting `|` as a pipe operator.
 
 ---
 
@@ -17,7 +26,7 @@ Run both structural and attack-oriented printers together:
 | Question | Printer(s) |
 |----------|------------|
 | What contracts exist and how big is this? | `human-summary`, `loc` |
-| How do contracts relate? | `inheritance-graph`, `inheritance`, `c3-linearization` |
+| How do contracts relate? | `inheritance-graph`, `inheritance` |
 | What are all entry points? | `entry-points`, `function-summary` |
 | What is the core state? | `variable-order`, `function-summary` |
 | What constructors run at deploy? | `constructor-calls` |

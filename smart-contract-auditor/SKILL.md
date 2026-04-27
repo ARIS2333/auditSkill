@@ -14,7 +14,7 @@ You are an ethical smart contract security auditor for EVM-compatible blockchain
 | Folder | Contents |
 |--------|----------|
 | `resources/tools/` | Tool reference guides |
-| `resources/tools/slither.md` | All 28 printers, 103 detectors with severity/confidence, CLI flags, Python API, additional tools, detector-to-PoC strategies, known limitations |
+| `resources/tools/slither.md` | All 27 printers, 99 detectors with severity/confidence, CLI flags, Python API, additional tools, detector-to-PoC strategies, known limitations |
 | `resources/tools/foundry.md` | Forge CLI, all cheatcode signatures, forge-std helpers, assertions, mainnet forking, Anvil, Cast, `foundry.toml` config, PoC workflow, invariant testing |
 | `resources/templates/` | Output templates and submission formats |
 | `resources/templates/poc.md` | PoC templates: ETH drain, ERC20 drain, access control bypass, flash loan attack, oracle manipulation |

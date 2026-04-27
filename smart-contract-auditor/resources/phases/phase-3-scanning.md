@@ -47,14 +47,16 @@ slither . --foundry-out-directory out \
 
 ### 3. Scenario-Specific Scans
 
-Based on Phase 0.4 detection, save to `audit-output/phase-3-scanning/slither-scenario.json`:
+Based on Phase 0.4 detection, save outputs to `audit-output/phase-3-scanning/`:
 
 | Scenario Detected | Scan |
 |-------------------|------|
-| Proxy/Upgradeable | `slither-check-upgradeability . ImplementationContract` |
-| ERC20/721 | `slither-check-erc . ContractName` |
-| DeFi/Oracle | Oracle-focused detectors: `pyth-deprecated-functions,pyth-unchecked-confidence,pyth-unchecked-publishtime,chronicle-unchecked-price,incorrect-equality,divide-before-multiply,weak-prng` |
-| Access Control | `suicidal,unprotected-upgrade,tx-origin,arbitrary-send-eth,arbitrary-send-erc20,controlled-delegatecall,protected-vars` |
+| Proxy/Upgradeable | `slither-check-upgradeability . ImplementationContract > audit-output/phase-3-scanning/upgradeability-check.txt 2>&1` |
+| ERC20/721 | `slither-check-erc . ContractName > audit-output/phase-3-scanning/erc-check.txt 2>&1` |
+| DeFi/Oracle | Oracle-focused detectors: `pyth-deprecated-functions,pyth-unchecked-confidence,pyth-unchecked-publishtime,chronicle-unchecked-price,incorrect-equality,divide-before-multiply,weak-prng` — use `--json audit-output/phase-3-scanning/slither-scenario.json` |
+| Access Control | `suicidal,unprotected-upgrade,tx-origin,arbitrary-send-eth,arbitrary-send-erc20,controlled-delegatecall,protected-vars` — use `--json audit-output/phase-3-scanning/slither-scenario.json` |
+
+**Note:** `slither-check-upgradeability` and `slither-check-erc` are standalone tools that output human-readable text to stdout. They do not support the `--json` flag. Redirect their output to `.txt` files as shown above.
 
 ### 4. Noise Reduction (if needed)
 

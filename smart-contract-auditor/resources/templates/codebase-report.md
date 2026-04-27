@@ -75,14 +75,6 @@ src/
     └── FeeCollector.sol       # Protocol fee accumulation and distribution
 ```
 
-**Rules for this section:**
-- Use a plain text tree (`├──`, `└──`, `│`) — not Mermaid
-- Annotate every file/directory with a short comment (`#`) explaining its purpose
-- Group by logical layer (user-facing, core, libraries, periphery, governance, etc.)
-- If the project has multiple top-level source directories (e.g., `src/` and `contracts/`), show all of them
-- Mark files that are **out of scope** with `# [OUT OF SCOPE]` rather than omitting them, so the reader knows they exist
-
-**Populated from:** `ls`/`find` on project directory + code reading for annotations
 
 ---
 
@@ -118,14 +110,6 @@ flowchart TB
     Guardian -->|"emergency pause"| ContractA
 ```
 
-**Diagram rules:**
-- Top-to-bottom (`TB`) for hierarchy — user at top, external at bottom
-- Edge labels describe the **action**, not the function name
-- Use subgraphs to group by trust boundary
-- Never more than ~15 nodes — split into multiple diagrams if needed
-
-**Populated from:** Read `printers/inheritance-graph*.dot` + `printers/call-graph*.dot`
-
 ---
 
 ## 4. Contract Inventory
@@ -133,8 +117,6 @@ flowchart TB
 | Contract | LOC | Purpose | Upgradeable | Inherits |
 |----------|-----|---------|-------------|----------|
 | [Name.sol] | [N] | [One sentence] | [Yes (UUPS) / No] | [Parent contracts] |
-
-**Populated from:** Read `printers/human-summary.txt` + `printers/inheritance.txt`
 
 ---
 
@@ -157,15 +139,11 @@ ContractName → BaseContract → OpenZeppelinX
 |----------|------|------------|---------|
 | [name] | [type] | [public/private/internal] | [what it stores] |
 
-**Populated from:** Read `printers/variable-order.txt` + `printers/function-summary.txt`
-
 #### Functions
 
 | Function | Visibility | Modifiers | State Changes | Description |
 |----------|-----------|-----------|---------------|-------------|
 | [name] | [external/public] | [modifier list] | [reads X, writes Y] | [what it does] |
-
-**Populated from:** Read `printers/function-summary.txt` + `printers/entry-points.txt`
 
 #### Constants & Immutables
 
@@ -179,8 +157,6 @@ ContractName → BaseContract → OpenZeppelinX
 |-------|-----------|------------|
 | [name] | [param list] | [trigger condition] |
 
-**Populated from:** `forge inspect <Contract> errors`
-
 #### Events
 
 | Event | Parameters | Emitted When |
@@ -192,8 +168,6 @@ ContractName → BaseContract → OpenZeppelinX
 | Modifier | Purpose | Used By |
 |----------|---------|---------|
 | [name] | [what it checks] | [function list] |
-
-**Populated from:** Read `printers/modifiers.txt`
 
 #### Assembly Usage
 
@@ -232,6 +206,7 @@ sequenceDiagram
 ```
 
 **State Changes:**
+
 - `contractA.balances[user]` += amount
 - `contractA.totalSupply` += shares
 
@@ -239,8 +214,6 @@ sequenceDiagram
 - First depositor: [what happens]
 - Zero amount: [what happens]
 - At deposit cap: [what happens]
-
-**Populated from:** Read `printers/call-graph*.dot` + `printers/function-summary.txt` + Foundry `-vvvv` trace output
 
 ---
 
@@ -277,8 +250,6 @@ flowchart LR
 
 [Document how roles can be changed. Who can grant/revoke roles? Can the owner change the timelock delay?]
 
-**Populated from:** Read `printers/vars-and-auth.txt` + `printers/modifiers.txt`
-
 ---
 
 ## 8. Value Flow
@@ -309,8 +280,6 @@ shares = (depositAmount * totalShares) / totalAssets
 assets = (shareAmount * totalAssets) / totalShares
 ```
 
-**Populated from:** Read `printers/function-summary.txt` (filter: payable, transfer, mint, burn)
-
 ---
 
 ## 9. State Machine
@@ -336,8 +305,6 @@ stateDiagram-v2
 | Emergency | No | Yes (partial) | Limited | Auto |
 | Shutdown | No | Yes (pro-rata) | No | No |
 
-**Populated from:** Read `printers/not-pausable.txt` + code reading of state transition functions
-
 ---
 
 ## 10. External Dependencies
@@ -351,8 +318,6 @@ stateDiagram-v2
 | Feed | Heartbeat | Deviation | Staleness Check |
 |------|-----------|-----------|----------------|
 | [ETH/USD] | [1h] | [0.5%] | [`require(updatedAt > block.timestamp - 3600)`] |
-
-**Populated from:** Read `printers/call-graph*.dot` + `printers/data-dependency.txt` + code reading
 
 ---
 
@@ -379,8 +344,6 @@ Only include if the protocol uses a proxy/upgradeable pattern.
 
 [Who can trigger upgrades? What timelock? Is there a safety check (e.g., UUPS `_authorizeUpgrade`)?]
 
-**Populated from:** Read `printers/variable-order.txt` + `slither-check-upgradeability` output
-
 ---
 
 ## 12. Key Invariants
@@ -393,8 +356,6 @@ These are the rules that must NEVER be broken. When time permits in Phase 5 (Add
 | 2 | Only Timelock can change strategy | [`onlyOwner` + Timelock delay] |
 | 3 | Share price never decreases outside of loss events | [Rounding always favors vault] |
 | 4 | Withdrawals never revert in Paused state | [Separate pause flags for deposit/withdraw] |
-
-**Populated from:** Synthesized from Phase 2 hypothesis list + Phase 2/4 code reading
 
 ---
 
@@ -421,8 +382,6 @@ Useful for reading raw calldata in multisig transactions and timelock queues.
 | Selector | Function | Contract |
 |----------|----------|----------|
 | [`0xa694fc3a`] | [`deposit(uint256)`] | [Vault] |
-
-**Populated from:** Read `printers/function-id.txt`
 ````
 
 ---

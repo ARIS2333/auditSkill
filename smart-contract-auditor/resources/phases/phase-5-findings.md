@@ -8,7 +8,7 @@
 
 ## Resources
 
-- `tools/foundry.md` §6 for cheatcodes, §7 for helpers/assertions, §12-13 for PoC workflow and template, §14 for invariant testing
+- `tools/foundry.md` §6 for cheatcodes, §7 for helpers/assertions, §12 for PoC workflow, §13 for invariant testing
 - `templates/poc.md` for starter templates (ETH drain, ERC20 drain, access control bypass, flash loan, oracle manipulation)
 - `tools/slither.md` §10 for detector-to-PoC strategies
 
@@ -64,5 +64,5 @@ For each finding, create a subfolder (e.g., `audit-output/phase-5-findings/H-01/
 
 When time permits, go beyond individual PoCs:
 - **Fuzz testing** for protocol invariants (`testFuzz_` pattern, `bound()` for input ranges)
-- **Stateful invariant testing** for complex protocols (`invariant_` pattern with handler contracts) — see `tools/foundry.md` §14 for the complete invariant testing reference, handler pattern, configuration, and common DeFi invariants
+- **Stateful invariant testing** for complex protocols (`invariant_` pattern with handler contracts) — see `tools/foundry.md` §13 for the complete invariant testing reference, handler pattern, configuration, and common DeFi invariants
 - **Gas analysis** (`forge test --gas-report`) for DoS vectors — functions exceeding block gas limit

@@ -7,7 +7,7 @@
 ## 0.0 Create Output Directory
 
 ```bash
-mkdir -p audit-output/{phase-1-recon/printers,phase-2-docs,phase-3-scanning,phase-4-analysis,phase-5-findings,phase-6-report}
+mkdir -p audit-output/{phase-1-recon/printers/per-contract,phase-2-docs,phase-3-scanning,phase-4-analysis,phase-5-findings,phase-6-report}
 ```
 
 ## 0.1 Detect Project Type
@@ -39,7 +39,19 @@ Grep the codebase for patterns that activate conditional checks in later phases:
 - **Staking/Restaking:** `stake`, `unstake`, `restake`, `slash`, `operator`, `delegation`, `withdrawal`
 - **Transient storage:** `TSTORE`, `TLOAD`, `tstore`, `tload` — flag for EIP-1153 security review
 
-## 0.5 Establish Slither Base Flags
+## 0.5 Assess Scope Size & Set Workflow Intensity
+
+After compilation succeeds, note the total SLOC and contract count from the compiler output or a quick `human-summary` run. Use this to calibrate the workflow:
+
+| Size | Criteria | Workflow Adjustment |
+|------|----------|-------------------|
+| **Small** | <500 SLOC, <5 contracts | Streamlined Phase 2: combine Contract Deep Dives and User Flows, skip State Machine if no discrete states, abbreviate architecture diagram |
+| **Medium** | 500-2000 SLOC, 5-15 contracts | Full workflow as documented |
+| **Large** | >2000 SLOC or >15 contracts | Prioritize high-value contracts (those handling ETH/tokens, access control, external calls). Split printer output into per-contract files. Process Phase 2 contract-by-contract. |
+
+Record the size classification and any workflow adjustments in the structural summary notes.
+
+## 0.6 Establish Slither Base Flags
 
 Determine which flags to append to every `slither` command. For Foundry projects, the standard flags are:
 
@@ -49,7 +61,7 @@ Determine which flags to append to every `slither` command. For Foundry projects
 
 **Important:** Do NOT store the full command in a shell variable and then execute the variable. Always write out the complete `slither` command directly each time. Shell variable expansion mangles multi-word arguments and pipe characters.
 
-## 0.6 Select Submission Platform
+## 0.7 Select Submission Platform
 
 Ask the user which platform. Default: Code4rena. Available templates:
 - Code4rena: `templates/code4rena.md`
@@ -57,7 +69,7 @@ Ask the user which platform. Default: Code4rena. Available templates:
 
 If selected platform's template doesn't exist, inform the user and fall back to Code4rena format.
 
-## 0.7 Contest Pre-Flight (Competitive Audits)
+## 0.8 Contest Pre-Flight (Competitive Audits)
 
 Before starting analysis:
 1. **Read the contest README thoroughly** — known issues and out-of-scope items save you from wasted effort.

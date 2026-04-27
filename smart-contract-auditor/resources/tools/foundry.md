@@ -20,8 +20,7 @@ Comprehensive reference for smart contract auditors using Foundry to build, test
 10. [Cast CLI for Chain Interaction](#10-cast-cli-for-chain-interaction)
 11. [Configuration Reference (foundry.toml)](#11-configuration-reference-foundrytoml)
 12. [PoC Development Workflow](#12-poc-development-workflow)
-13. [PoC Templates](#13-poc-templates)
-14. [Invariant Testing for Audits](#14-invariant-testing-for-audits)
+13. [Invariant Testing for Audits](#13-invariant-testing-for-audits)
 
 ---
 
@@ -180,7 +179,7 @@ auto_detect_solc = true
 
 ```toml
 [profile.default]
-evm_version = "shanghai"  # Options: london, paris, shanghai, cancun, prague, osaka (default: osaka)
+evm_version = "shanghai"  # Options: london, paris, shanghai, cancun, prague, osaka (default varies by Foundry version — run `forge config` to check)
 ```
 
 **Remapping errors after dependency install:**
@@ -1041,13 +1040,7 @@ max_test_rejects = 65536
 
 ---
 
-## 13. PoC Templates
-
-See `templates/poc.md` for 5 starter PoC templates (ETH drain, ERC20 drain, access control bypass, flash loan attack, oracle manipulation). Each follows a `setUp()` / `test_*()` structure with pre-state recording, exploit execution, and assertions.
-
----
-
-## 14. Invariant Testing for Audits
+## 13. Invariant Testing for Audits
 
 Invariant testing (also called stateful fuzz testing) is one of the most powerful techniques for finding complex, multi-step vulnerabilities that single-function fuzz tests miss. Foundry's invariant tester randomly calls sequences of functions and checks that protocol invariants hold after every call.
 

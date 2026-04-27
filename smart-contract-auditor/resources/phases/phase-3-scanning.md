@@ -4,7 +4,7 @@
 
 **Gate:** Full scan JSON output available and parsed. Findings categorized by severity and contextualized against the Phase 2 codebase documentation.
 
-See `tools/slither.md` §4 for all 99 detectors, §6 for targeted scan strategies, §14 for known limitations (what Slither cannot catch).
+See `tools/slither.md` §4 for all 99 detectors, §6 for targeted scan strategies, §11 for known limitations (what Slither cannot catch).
 
 ---
 
@@ -35,11 +35,13 @@ slither . --foundry-out-directory out \
 
 ### 2. High-Impact Focused Scan
 
-Reentrancy, arbitrary-send, delegatecall, suicidal, unprotected-upgrade, uninitialized, unchecked-transfer, shadowing-state, weak-prng, msg-value-loop:
+Reentrancy, arbitrary-send, delegatecall, suicidal, unprotected-upgrade, uninitialized, unchecked-transfer, shadowing-state, weak-prng, msg-value-loop, incorrect-return, return-leave, incorrect-exp, storage-array:
 
 ```bash
 slither . --foundry-out-directory out \
-  --detect reentrancy-eth,reentrancy-no-eth,arbitrary-send-eth,arbitrary-send-erc20,arbitrary-send-erc20-permit,controlled-delegatecall,controlled-array-length,delegatecall-loop,suicidal,unprotected-upgrade,uninitialized-state,uninitialized-storage,shadowing-state,unchecked-transfer,weak-prng,msg-value-loop \
+  --exclude-dependencies \
+  --filter-paths 'lib|node_modules|test|script' \
+  --detect reentrancy-eth,reentrancy-no-eth,arbitrary-send-eth,arbitrary-send-erc20,arbitrary-send-erc20-permit,controlled-delegatecall,controlled-array-length,delegatecall-loop,suicidal,unprotected-upgrade,uninitialized-state,uninitialized-storage,shadowing-state,unchecked-transfer,weak-prng,msg-value-loop,incorrect-return,return-leave,incorrect-exp,storage-array \
   --json audit-output/phase-3-scanning/slither-high-report.json
 ```
 

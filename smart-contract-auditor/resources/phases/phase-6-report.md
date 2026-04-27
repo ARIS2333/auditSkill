@@ -46,7 +46,7 @@ Write to `audit-output/phase-6-report/`:
 - Do NOT use R- (refactor) or I- (informational) labels
 
 ### Sherlock
-- All findings submitted individually regardless of severity
+- High/Medium findings submitted individually (Low/Info not accepted unless contest specifies otherwise)
 - Findings are deduplicated by root cause — ensure each submission has a distinct root cause
 - Pre-conditions are explicitly separated into Internal and External
 - Check contest README for admin trust assumptions (TRUSTED vs RESTRICTED)

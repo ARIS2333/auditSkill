@@ -2,7 +2,7 @@
 
 **Purpose:** Build a complete, tool-verified structural model of the codebase using Slither printers. Do NOT read any `.sol` files during this phase.
 
-**Gate:** You can answer every structural question in the table below without reading code, AND the structural summary includes a printer output guide.
+**Gate:** You can answer every structural question (contract count, inheritance hierarchy, function visibility, storage layout, access control modifiers, entry points) without reading code, AND the structural summary includes a printer output guide.
 
 ---
 

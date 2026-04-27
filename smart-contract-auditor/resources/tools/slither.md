@@ -2,7 +2,7 @@
 
 Official GitHub: https://github.com/crytic/slither
 
-Comprehensive reference for smart contract auditors using Slither for static vulnerability analysis, contract inspection, and audit reporting. All commands, detectors, printers, and severity classifications verified against the [Slither source code](https://github.com/crytic/slither) (latest `master` as of April 2026).
+Reference for smart contract auditors using Slither for static vulnerability analysis and contract inspection. All commands, detectors, printers, and severity classifications verified against the [Slither source code](https://github.com/crytic/slither) (latest `master` as of April 2026).
 
 ---
 
@@ -14,14 +14,11 @@ Comprehensive reference for smart contract auditors using Slither for static vul
 4. [Vulnerability Detection (Detectors)](#4-vulnerability-detection-detectors)
 5. [Contract Inspection (Printers)](#5-contract-inspection-printers)
 6. [Targeted Scan Strategies](#6-targeted-scan-strategies)
-7. [False Positive Management](#7-false-positive-management)
-8. [JSON & SARIF Output](#8-json--sarif-output)
-9. [Upgradeability Analysis](#9-upgradeability-analysis)
-10. [Additional Slither Tools](#10-additional-slither-tools)
-11. [Python API for Custom Analysis](#11-python-api-for-custom-analysis)
-12. [Custom Detector Development](#12-custom-detector-development)
-13. [Detector-to-PoC Mapping](#13-detector-to-poc-mapping)
-14. [Known Limitations](#14-known-limitations)
+7. [JSON Output](#7-json-output)
+8. [Upgradeability Analysis](#8-upgradeability-analysis)
+9. [Additional Slither Tools](#9-additional-slither-tools)
+10. [Detector-to-PoC Mapping](#10-detector-to-poc-mapping)
+11. [Known Limitations](#11-known-limitations)
 
 ---
 
@@ -89,21 +86,6 @@ slither . --foundry-out-directory out
 slither .
 ```
 
-### Truffle / Dapp / Etherlime Projects
-
-```bash
-slither .
-```
-
-### Embark Projects
-
-```bash
-# First run only
-slither . --embark-overwrite-config
-# Subsequent runs
-slither .
-```
-
 ### Single Solidity File
 
 ```bash
@@ -114,12 +96,6 @@ slither file.sol
 
 ```bash
 slither 0xContractAddress --etherscan-apikey YOUR_KEY
-```
-
-### AST Input
-
-```bash
-slither file.ast.json
 ```
 
 ---
@@ -150,23 +126,14 @@ slither file.ast.json
 | `--list-printers` | List all available printers |
 | `--include-interfaces` | Include interfaces in inheritance-graph printer output |
 
-### Output Formatting
+### Output
 
 | Flag | Description |
 |------|-------------|
 | `--json <file>` | Export results as JSON (use `-` for stdout) |
 | `--json-types <types>` | Filter JSON output by result types |
-| `--sarif <file>` | Export results as SARIF JSON (use `-` for stdout) |
-| `--sarif-input <file>` | SARIF input (beta) |
-| `--sarif-triage <file>` | SARIF triage (beta) |
-| `--zip <file>` | Export results as zipped JSON |
-| `--zip-type <type>` | Zip compression type (lzma, stored, deflated, bzip2) |
 | `--checklist` | Output as Markdown checklist |
 | `--checklist-limit <n>` | Limit results per detector in Markdown output |
-| `--markdown-root <url>` | Base URL for Markdown generation |
-| `--disable-color` | Disable colored terminal output |
-| `--solc-disable-warnings` | Suppress solc compiler warnings |
-| `--generate-patches` | Generate patches (JSON output only) |
 
 ### Path Filtering
 
@@ -174,25 +141,6 @@ slither file.ast.json
 |------|-------------|
 | `--filter-paths <regex>` | Exclude results from matching paths (e.g., `'mocks/\|test/'`) — always use single quotes around the regex to prevent shell pipe interpretation |
 | `--include-paths <regex>` | Include only results from matching paths (opposite of `--filter-paths`) |
-
-### CI / Exit Code Control
-
-| Flag | Description |
-|------|-------------|
-| `--fail-pedantic` | Fail if any findings are detected (default) |
-| `--fail-low` | Fail if any low or greater impact findings detected |
-| `--fail-medium` | Fail if any medium or greater impact findings detected |
-| `--fail-high` | Fail if any high impact findings detected |
-| `--fail-none` | Do not return finding count in exit code |
-| `--no-fail` | Do not fail on parsing errors (echidna mode) |
-
-### Triage & Configuration
-
-| Flag | Description |
-|------|-------------|
-| `--triage-mode` | Interactive triage — saves decisions to triage database |
-| `--triage-database <file>` | Custom triage database path (default: `slither.db.json`) |
-| `--config-file <file>` | Custom config file (default: `slither.config.json`) |
 
 ### Framework-Specific (via crytic-compile)
 
@@ -211,13 +159,6 @@ slither file.ast.json
 | `--solc-remaps <remaps>` | Add import remappings |
 | `--solc-args <args>` | Custom solc arguments |
 | `--etherscan-apikey <key>` | Etherscan API key for verified contract analysis |
-
-### Miscellaneous
-
-| Flag | Description |
-|------|-------------|
-| `--solc-ast` | Provide the contract as a JSON AST |
-| `--change-line-prefix <char>` | Change the line prefix for displayed source code (default: `#`) |
 
 ---
 
@@ -444,40 +385,11 @@ slither . --print not-pausable
 slither . --print vars-and-auth
 ```
 
-#### Control Flow Analysis
+#### Call Graph
 
 ```bash
-# Control flow graphs per function
-slither . --print cfg
-
-# Call graph (inter-function calls)
+# Inter-function call relationships
 slither . --print call-graph
-
-# Dominator tree per function
-slither . --print dominator
-```
-
-#### Code Quality Metrics
-
-```bash
-# Lines of code breakdown (src, dep, test)
-slither . --print loc
-
-# CK complexity metrics
-slither . --print ck
-
-# Halstead complexity metrics
-slither . --print halstead
-
-# Martin coupling metrics (Ca, Ce, Instability, Abstractness, Distance)
-slither . --print martin
-```
-
-#### Foundry-Specific
-
-```bash
-# Detect Foundry cheatcode usage in contracts
-slither . --print cheatcode
 ```
 
 #### Running Multiple Printers
@@ -496,13 +408,13 @@ slither . --print function-summary,vars-and-auth,modifiers,variable-order,entry-
 slither . --foundry-out-directory out --json slither-report.json
 ```
 
-Runs all 103 detectors, outputs structured JSON.
+Runs all 99 detectors, outputs structured JSON.
 
 ### High-Impact-Only Triage
 
 ```bash
 slither . --foundry-out-directory out \
-  --detect reentrancy-eth,arbitrary-send-eth,arbitrary-send-erc20,arbitrary-send-erc20-permit,controlled-delegatecall,controlled-array-length,delegatecall-loop,suicidal,unprotected-upgrade,uninitialized-state,uninitialized-storage,shadowing-state,unchecked-transfer,weak-prng,msg-value-loop,incorrect-return,return-leave,incorrect-exp,storage-array
+  --detect reentrancy-eth,reentrancy-no-eth,arbitrary-send-eth,arbitrary-send-erc20,arbitrary-send-erc20-permit,controlled-delegatecall,controlled-array-length,delegatecall-loop,suicidal,unprotected-upgrade,uninitialized-state,uninitialized-storage,shadowing-state,unchecked-transfer,weak-prng,msg-value-loop,incorrect-return,return-leave,incorrect-exp,storage-array
 ```
 
 ### Reentrancy-Focused Scan
@@ -562,84 +474,7 @@ slither . --foundry-out-directory out \
 
 ---
 
-## 7. False Positive Management
-
-### Triage Mode
-
-```bash
-slither . --foundry-out-directory out --triage-mode
-```
-
-Interactive mode: for each finding, mark as true positive or false positive. Decisions are saved to `slither.db.json`. Subsequent runs skip marked false positives.
-
-Custom triage database path:
-
-```bash
-slither . --foundry-out-directory out --triage-mode --triage-database my-triage.db.json
-```
-
-### Inline Suppression
-
-Suppress specific detectors in source code:
-
-```solidity
-// Single line
-// slither-disable-next-line reentrancy-eth
-(bool success, ) = msg.sender.call{value: amount}("");
-
-// Block suppression
-// slither-disable-start reentrancy-eth
-(bool success, ) = msg.sender.call{value: amount}("");
-require(success);
-balances[msg.sender] = 0;
-// slither-disable-end reentrancy-eth
-```
-
-
-### Security Annotations
-
-Slither recognizes several `@custom:security` NatSpec annotations:
-
-```solidity
-/// @custom:security non-reentrant
-uint256 public balance;  // Marks variable as protected from reentrancy
-
-/// @custom:security write-protection="onlyOwner()"
-uint256 public criticalValue;  // Marks variable as write-protected by the specified modifier
-
-/// @custom:security isDelegatecallProxy
-contract MyProxy {
-    // Marks contract as a delegatecall proxy
-}
-
-/// @custom:security isUpgradeable
-contract MyContract {
-    // Marks contract as upgradeable
-}
-```
-
-### Configuration File
-
-Create `slither.config.json`:
-
-```json
-{
-  "detectors_to_exclude": "naming-convention,unused-state,solc-version",
-  "filter_paths": "lib/|node_modules/",
-  "exclude_dependencies": true,
-  "foundry_out_directory": "out"
-}
-```
-
-Run with config:
-
-```bash
-slither . --config-file slither.config.json
-```
-
----
-
-## 8. JSON & SARIF Output
+## 7. JSON Output
 
 ### Generate JSON Report
 
@@ -647,19 +482,6 @@ slither . --config-file slither.config.json
 slither . --foundry-out-directory out --json slither-report.json
 # Output to stdout
 slither . --foundry-out-directory out --json -
-```
-
-### SARIF Output (for GitHub Code Scanning / IDE Integration)
-
-```bash
-slither . --foundry-out-directory out --sarif slither-report.sarif
-```
-
-### Zipped Output
-
-```bash
-slither . --foundry-out-directory out --zip slither-report.zip
-slither . --foundry-out-directory out --zip slither-report.zip --zip-type deflated
 ```
 
 ### Top-Level JSON Schema
@@ -707,29 +529,9 @@ Each finding in the `detectors` array:
 }
 ```
 
-### Element Types
-
-| Type | Description |
-|------|-------------|
-| `contract` | Contract definition |
-| `function` | Function definition |
-| `variable` | Variable (state or local) |
-| `node` | CFG node (specific code location) |
-| `pragma` | Pragma directive |
-| `enum` | Enum definition |
-| `struct` | Struct definition |
-| `event` | Event definition |
-
-### Markdown Checklist Output
-
-```bash
-slither . --foundry-out-directory out --checklist > audit-checklist.md
-slither . --foundry-out-directory out --checklist --checklist-limit 5 > audit-checklist.md
-```
-
 ---
 
-## 9. Upgradeability Analysis
+## 8. Upgradeability Analysis
 
 ### `slither-check-upgradeability`
 
@@ -781,9 +583,7 @@ slither-check-upgradeability . Implementation \
 
 ---
 
-## 10. Additional Slither Tools
-
-All registered entry points from `pyproject.toml`:
+## 9. Additional Slither Tools
 
 ### `slither-flat` — Flatten Contracts
 
@@ -800,15 +600,6 @@ slither-check-erc . ContractName
 ```
 
 Validates compliance with ERC20, ERC721, and other token standards.
-
-### `slither-prop` — Property Generation
-
-```bash
-slither-prop . --contract ContractName
-slither-prop . --contract ContractName --scenario Transferable
-```
-
-Automatically generates unit tests and properties for invariant testing (compatible with Echidna). Use `--contract` to target a specific contract and `--scenario` to select a test scenario.
 
 ### `slither-read-storage` — Read Storage Values
 
@@ -833,15 +624,6 @@ slither-interface ContractName .
 
 Generates a Solidity interface from a contract's external/public functions. Syntax: contract name first, then the source file or project directory.
 
-### `slither-format` — Auto-Fix Findings
-
-```bash
-slither-format .
-slither-format . --detect naming-convention,external-function
-```
-
-Automatically applies fixes for supported detector findings. Only a limited set of detectors are supported: `unused-state`, `solc-version`, `pragma`, `naming-convention`, `external-function`, `constable-states`, `constant-function-asm`, `constant-function-state`.
-
 ### `slither-find-paths` — Function Reachability
 
 ```bash
@@ -851,38 +633,6 @@ slither-find-paths . Contract.functionA Contract.functionB
 
 Finds possible execution paths to the specified target functions. Targets use `Contract.functionName` format.
 
-### `slither-simil` — Code Similarity
-
-```bash
-# Train a model on a codebase
-slither-simil train model.bin --filename .
-
-# Test similarity of a specific function against the model
-slither-simil test model.bin --filename . --fname "Contract.functionName"
-
-# Get info about a trained model
-slither-simil info model.bin --filename .
-```
-
-Detects similar code patterns across contracts (clone detection, code reuse analysis). Requires a trained model — first `train`, then `test` or `info`.
-
-### `slither-mutate` — Mutation Testing
-
-```bash
-slither-mutate . --test-cmd "forge test"
-slither-mutate . --test-cmd "forge test" --test-dir test/ --timeout 60
-```
-
-Applies mutations to the contract source code and runs the test suite to evaluate its effectiveness. Requires `--test-cmd` to specify how to run the project's tests.
-
-### `slither-check-kspec` — K Specification Coverage
-
-```bash
-slither-check-kspec . spec.md
-```
-
-Measures coverage of formal K-framework specifications. Takes the project directory and the Klab spec markdown file as positional arguments.
-
 ### `slither-doctor` — Diagnose Issues
 
 ```bash
@@ -891,224 +641,9 @@ slither-doctor .
 
 Diagnoses common Slither installation and configuration issues for the given project.
 
-### `slither-documentation` — Generate NatSpec Documentation
-
-```bash
-slither-documentation .
-slither-documentation . --overwrite
-```
-
-Auto-generates NatSpec documentation for all functions using AI. Use `--overwrite` to replace existing files (use with caution).
-
-### GitHub Actions Integration
-
-```yaml
-- name: Run Slither
-  uses: crytic/slither-action@v0.4.0
-  with:
-    target: '.'
-    slither-args: '--json slither-report.json --exclude-dependencies'
-```
-
 ---
 
-## 11. Python API for Custom Analysis
-
-### Basic Setup
-
-```python
-from slither.slither import Slither
-
-slither = Slither('.')
-```
-
-### Core Object Model
-
-#### Slither Instance
-
-| Property | Description |
-|----------|-------------|
-| `slither.contracts` | All contracts (including inherited) |
-| `slither.contracts_derived` | Only non-inherited contracts (avoids duplicates) |
-| `slither.get_contract_from_name(name)` | Get specific contract by name |
-
-#### Contract Object
-
-| Property | Description |
-|----------|-------------|
-| `contract.name` | Contract name |
-| `contract.functions` | All functions |
-| `contract.modifiers` | All modifiers |
-| `contract.state_variables` | All state variables |
-| `contract.inheritance` | Parent contracts (linearized) |
-| `contract.all_functions_called` | All internally reachable functions |
-| `contract.get_function_from_signature(sig)` | Lookup by signature |
-| `contract.get_modifier_from_signature(sig)` | Lookup modifier by signature |
-| `contract.get_state_variable_from_name(name)` | Lookup state variable |
-
-#### Function Object
-
-| Property | Description |
-|----------|-------------|
-| `function.name` | Function name |
-| `function.full_name` | Name with parameter types |
-| `function.visibility` | `public`, `external`, `internal`, `private` |
-| `function.view` | Is view function |
-| `function.pure` | Is pure function |
-| `function.is_constructor` | Is constructor |
-| `function.nodes` | Control flow graph nodes |
-| `function.entry_point` | CFG entry node |
-| `function.variables_read` | All variables read |
-| `function.variables_written` | All variables written |
-| `function.state_variables_read` | State variables read |
-| `function.state_variables_written` | State variables written |
-| `function.modifiers` | Applied modifiers |
-| `function.parameters` | Input parameters |
-| `function.return_type` | Return types |
-
-#### Node Object
-
-| Property | Description |
-|----------|-------------|
-| `node.type` | `NodeType` enum (ENTRY_POINT, RETURN, IF, etc.) |
-| `node.expression` | Code expression at this node |
-| `node.variables_read` | Variables read at this node |
-| `node.variables_written` | Variables written at this node |
-| `node.state_variables_read` | State variables read |
-| `node.state_variables_written` | State variables written |
-| `node.irs` | SlithIR operations |
-
-#### Variable Object
-
-| Property | Description |
-|----------|-------------|
-| `variable.name` | Variable name |
-| `variable.type` | Solidity type |
-| `variable.initialized` | Has initializer |
-
-### Example: Map State Variable Access per Function
-
-```python
-from slither.slither import Slither
-
-slither = Slither('.')
-
-for contract in slither.contracts_derived:
-    print(f"\n=== {contract.name} ===")
-    for function in contract.functions:
-        if function.visibility in ['public', 'external']:
-            reads = [v.name for v in function.state_variables_read]
-            writes = [v.name for v in function.state_variables_written]
-            print(f"  {function.visibility} {function.name}()")
-            if reads:
-                print(f"    Reads:  {reads}")
-            if writes:
-                print(f"    Writes: {writes}")
-```
-
-### Example: Find Functions Without Access Control That Write State
-
-```python
-from slither.slither import Slither
-
-slither = Slither('.')
-
-for contract in slither.contracts_derived:
-    for function in contract.functions:
-        if (function.visibility in ['public', 'external']
-            and not function.is_constructor
-            and len(function.modifiers) == 0
-            and len(function.state_variables_written) > 0):
-            print(f"[!] {contract.name}.{function.name}() — "
-                  f"writes state with no modifier")
-            print(f"    Writes: {[v.name for v in function.state_variables_written]}")
-```
-
-### Example: Inheritance Chain Analysis
-
-```python
-from slither.slither import Slither
-
-slither = Slither('.')
-
-for contract in slither.contracts_derived:
-    print(f"\n{contract.name}")
-    print(f"  Inherits: {[p.name for p in contract.inheritance]}")
-    for function in contract.functions:
-        if hasattr(function, 'overrides') and function.overrides:
-            print(f"  Overrides: {function.full_name}")
-```
-
----
-
-## 12. Custom Detector Development
-
-### Detector Skeleton
-
-```python
-from slither.detectors.abstract_detector import (
-    AbstractDetector,
-    DetectorClassification,
-)
-
-class MyDetector(AbstractDetector):
-    ARGUMENT = 'my-detector'
-    HELP = 'Detects [vulnerability description]'
-    IMPACT = DetectorClassification.HIGH
-    CONFIDENCE = DetectorClassification.HIGH
-
-    WIKI = 'https://example.com/my-detector'
-    WIKI_TITLE = 'My Detector'
-    WIKI_DESCRIPTION = 'Technical description'
-    WIKI_EXPLOIT_SCENARIO = 'Example exploit'
-    WIKI_RECOMMENDATION = 'Mitigation steps'
-
-    def _detect(self):
-        results = []
-        for contract in self.contracts:
-            for function in contract.functions:
-                if function.view or function.pure:
-                    continue
-                for node in function.nodes:
-                    for ir in node.irs:
-                        if self._is_vulnerable(ir):
-                            info = [
-                                "Vulnerability in ",
-                                function,
-                                " at ",
-                                node,
-                                "\n"
-                            ]
-                            res = self.generate_result(info)
-                            results.append(res)
-        return results
-
-    def _is_vulnerable(self, ir):
-        return False
-```
-
-### Classification Levels
-
-| Field | Values |
-|-------|--------|
-| `IMPACT` | `HIGH`, `MEDIUM`, `LOW`, `INFORMATIONAL`, `OPTIMIZATION` |
-| `CONFIDENCE` | `HIGH`, `MEDIUM`, `LOW` |
-
-### Registration Methods
-
-**Method 1:** Add to `slither/detectors/all_detectors.py`
-
-**Method 2:** Create a plugin package with entry points
-
-### Running Custom Detectors
-
-```bash
-slither . --detect my-detector
-```
-
----
-
-## 13. Detector-to-PoC Mapping
+## 10. Detector-to-PoC Mapping
 
 When writing a PoC for a specific detector finding, use these strategies:
 
@@ -1128,7 +663,7 @@ When writing a PoC for a specific detector finding, use these strategies:
 
 ---
 
-## 14. Known Limitations
+## 11. Known Limitations
 
 Understanding what Slither **cannot** do is as important as knowing what it can. These blind spots define where manual code review and Foundry invariant testing must fill the gap.
 

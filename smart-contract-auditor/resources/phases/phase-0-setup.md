@@ -52,8 +52,8 @@ Determine which flags to append to every `slither` command. For Foundry projects
 ## 0.6 Select Submission Platform
 
 Ask the user which platform. Default: Code4rena. Available templates:
-- Code4rena: `templates/code4rena.md` (under `resources/templates/`)
-- Sherlock: `templates/sherlock.md` (under `resources/templates/`)
+- Code4rena: `templates/code4rena.md`
+- Sherlock: `templates/sherlock.md`
 
 If selected platform's template doesn't exist, inform the user and fall back to Code4rena format.
 

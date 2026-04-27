@@ -2,7 +2,7 @@
 
 **[English](README.md) | [中文](README_CN.md)**
 
-A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) custom skill that turns Claude into a structured smart contract security auditor. It uses **Slither** for static analysis and **Foundry** for Proof-of-Concept exploit development, following a 7-phase workflow designed to minimize AI hallucination.
+A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) custom skill that turns Claude into a structured smart contract security auditor. It uses **Slither** for static analysis and **Foundry** for Proof-of-Concept exploit development, following a 7-phase workflow (Phases 0-6) designed to minimize AI hallucination.
 
 ## Why This Skill?
 
@@ -12,14 +12,15 @@ AI agents hallucinate when auditing smart contracts — they misread inheritance
 
 | Phase | Name | What Happens |
 |-------|------|-------------|
-| 0 | Environment Setup | Detect project type, verify compilation, identify audit scenarios (DeFi, proxy, token, cross-chain), select submission platform |
-| 1 | Structural Ground Truth | Slither printers map inheritance, entry points, function-to-state-variable relationships, and storage layout. **No code reading yet.** |
-| 2 | Attack Hypothesis Generation | More printers map access control, pause gaps, validation conditions, data flow. Produces a ranked target list. **Still no code reading.** |
-| 3 | Targeted Code Reading | Now read `.sol` files, guided by Phase 1-2 outputs. Every claim cross-referenced against printer output. |
-| 4 | Automated Vulnerability Scanning | Slither detectors (full scan + targeted: reentrancy, access control, oracle/DeFi). Runs in parallel with Phase 3. |
-| 5 | Triage & Deep Analysis | Cross-reference findings with code reading. Classify as Confirmed / Potential / False Positive. |
-| 6 | PoC Development | Foundry exploit tests for each confirmed High/Medium finding. |
-| 7 | Report Generation | Platform-specific submission format (Code4rena by default). |
+| 0 | Environment Setup | Detect project type, verify compilation, identify audit scenarios (DeFi, proxy, token, cross-chain, staking, transient storage), select submission platform |
+| 1 | Structural Reconnaissance | Run 13 Slither printers to map inheritance, entry points, function-to-state-variable relationships, storage layout, access control, and data flow. **No code reading.** |
+| 2 | Codebase Documentation | Dive into source code guided by Phase 1 outputs. Produce a comprehensive Mermaid-based codebase document (13 sections) and a ranked attack hypothesis list. |
+| 3 | Automated Scanning | Run Slither detectors (full scan, high-impact focused, scenario-specific). Contextualize every finding against Phase 2 documentation. |
+| 4 | Targeted Code Reading & Triage | Deep security-focused code reading with a 24-item checklist. Activate domain-specific playbooks. Classify findings as Confirmed / Potential / False Positive. |
+| 5 | PoC & Finding Documentation | Write Foundry PoC and finding report together per confirmed/potential finding. Invariant testing when time permits. |
+| 6 | Final Report Assembly | Assemble findings into platform-specific submission format. Severity review, dedup, PoC re-verification. |
+
+**Phases 0-3 are strictly sequential.** Phase 1 builds a structural model via printers (no code reading). Phase 2 reads source code using Phase 1 as its guide. Phase 3 runs detectors against a codebase you already understand. Phases 4-6 are the core analysis, PoC, and reporting stages.
 
 ## Installation
 
@@ -85,13 +86,28 @@ If it doesn't appear, check that the folder structure is correct:
 ~/.claude/skills/smart-contract-auditor/    # global
 # or
 .claude/skills/smart-contract-auditor/      # project-level
-├── SKILL.md                                # required — must exist
-└── resources/                              # reference docs and templates
-    ├── slither-audit-guide.md
-    ├── foundry-audit-guide.md
-    ├── poc-template.md
-    └── templates/
-        └── code4rena.md
+├── SKILL.md                                # required — skill entry point
+└── resources/
+    ├── tools/
+    │   ├── slither.md                      # 27 printers, 99 detectors, CLI flags, Python API
+    │   └── foundry.md                      # Forge CLI, cheatcodes, cast, anvil, PoC workflow
+    ├── templates/
+    │   ├── structural-summary.md           # Phase 1 output template
+    │   ├── codebase-report.md              # Phase 2 output template (13 sections)
+    │   ├── poc.md                          # 5 PoC starter templates
+    │   ├── code4rena.md                    # Code4rena submission format
+    │   └── sherlock.md                     # Sherlock submission format
+    ├── checklists/
+    │   ├── non-standard-tokens.md          # 14 non-standard ERC20 behaviors
+    │   └── domain-playbooks.md             # Attack checklists for 10 protocol types
+    └── phases/
+        ├── phase-0-setup.md
+        ├── phase-1-recon.md
+        ├── phase-2-docs.md
+        ├── phase-3-scanning.md
+        ├── phase-4-analysis.md
+        ├── phase-5-findings.md
+        └── phase-6-report.md
 ```
 
 ## Usage
@@ -114,7 +130,7 @@ Audit this Foundry project for security vulnerabilities
 Run slither on this codebase and write PoCs for any critical findings
 ```
 
-The agent will walk through all 7 phases: environment setup, structural analysis, attack surface mapping, code reading, vulnerability scanning, triage, PoC development, and report generation.
+The agent will walk through all 7 phases: environment setup, structural reconnaissance, codebase documentation, automated scanning, targeted code reading & triage, PoC development, and report assembly.
 
 ### Platform Selection
 
@@ -123,38 +139,61 @@ During Phase 0, the agent asks which submission platform to target. Currently su
 | Platform | Status |
 |----------|--------|
 | Code4rena | Ready |
-| Sherlock | Planned |
+| Sherlock | Ready |
 | Immunefi | Planned |
 | HackerOne | Planned |
 
-Default is Code4rena. To add a new platform, create a template in `resources/templates/` and update the table in `SKILL.md` Phase 0.6.
+Default is Code4rena. To add a new platform, create a template in `resources/templates/` and update Phase 0.6 in `SKILL.md`.
 
 ## File Structure
 
 ```
 smart-contract-auditor/
-├── SKILL.md                              # Core skill — 7-phase audit workflow
+├── SKILL.md                              # Core skill — 7-phase audit workflow (Phases 0-6)
 └── resources/
-    ├── slither-audit-guide.md            # 28 printers, 103 detectors, CLI flags, Python API
-    ├── foundry-audit-guide.md            # Forge CLI, cheatcodes, cast, anvil, PoC development
-    ├── poc-template.md                   # Foundry PoC template
-    └── templates/
-        └── code4rena.md                  # Code4rena submission format & checklist
+    ├── tools/
+    │   ├── slither.md                    # 27 printers, 99 detectors, CLI flags, Python API, additional tools
+    │   └── foundry.md                    # Forge CLI, cheatcodes, forge-std, cast, anvil, PoC workflow
+    ├── templates/
+    │   ├── structural-summary.md         # Phase 1 output template
+    │   ├── codebase-report.md            # Phase 2 output template (13 sections, Mermaid diagrams)
+    │   ├── poc.md                        # 5 Foundry PoC starter templates
+    │   ├── code4rena.md                  # Code4rena submission format & severity guide
+    │   └── sherlock.md                   # Sherlock submission format & dedup model
+    ├── checklists/
+    │   ├── non-standard-tokens.md        # 14 non-standard ERC20 token behaviors
+    │   └── domain-playbooks.md           # Domain-specific attack checklists (10 protocol types)
+    └── phases/
+        ├── phase-0-setup.md              # Environment setup & scope discovery
+        ├── phase-1-recon.md              # Structural reconnaissance (13 printers)
+        ├── phase-2-docs.md               # Codebase documentation & hypothesis list
+        ├── phase-3-scanning.md           # Automated Slither detector scans
+        ├── phase-4-analysis.md           # Targeted code reading & triage (24-item checklist)
+        ├── phase-5-findings.md           # PoC & finding documentation
+        └── phase-6-report.md             # Final report assembly
 ```
 
 ## Key Features
 
 ### Anti-Hallucination Design
 
-The skill enforces strict phase ordering — Phases 0-2 use only Slither printers (AST-derived facts) to build a structural model before the agent reads any code. If the agent's code reading later disagrees with printer output, the printer is treated as correct.
+The skill enforces strict phase ordering — Phase 0 sets up the environment, Phase 1 uses only Slither printers (AST-derived facts) to build a structural model before the agent reads any code. Phase 2 then reads source code with Phase 1 as its guide. If the agent's code reading later disagrees with printer output, the printer is treated as correct.
 
-### Inline Slither Reference
+### Modular Phase Architecture
 
-SKILL.md embeds the most commonly used Slither commands directly in each phase (18 printers, 26 high/medium detectors, preset scan commands) so the agent doesn't need to search the full guide for routine operations.
+Each phase has its own detailed instruction file in `resources/phases/`. Phases reference their inputs (prior phase outputs) and resource files as needed. This keeps the core `SKILL.md` concise while providing deep guidance when the agent needs it.
+
+### Comprehensive Tool References
+
+`resources/tools/slither.md` covers all 27 printers, 99 detectors with severity/confidence, CLI flags, Python API, and known limitations. `resources/tools/foundry.md` covers Forge CLI, all cheatcode signatures, forge-std helpers, mainnet forking, Anvil, Cast, and invariant testing.
 
 ### Detector-to-PoC Mapping
 
 For each common Slither detector finding (reentrancy, arbitrary-send, unprotected-upgrade, etc.), the skill provides a specific PoC strategy — what contracts to deploy, which cheatcodes to use, and what to assert.
+
+### Domain-Specific Playbooks
+
+Attack checklists for 10 protocol types: Vault/ERC4626, AMM/DEX, Lending, Proxy/Upgradeable, Governance, Cross-Chain/Bridge, Staking/Restaking, Perpetuals/Derivatives, Token Launch/Bonding Curves, and Yield Aggregators.
 
 ### Error Recovery
 
@@ -162,31 +201,31 @@ Three-tier fallback when Slither fails to compile: fix & retry, partial analysis
 
 ## Slither Printers Used
 
-These printers are the backbone of the anti-hallucination workflow:
+These 13 printers are run in Phase 1 to build the structural model before any code reading:
 
-| Printer | Phase | Purpose |
-|---------|-------|---------|
-| `human-summary` | 1 | Scope and complexity overview |
-| `loc` | 1 | Lines of code breakdown |
-| `inheritance-graph` | 1 | Full contract hierarchy (DOT) |
-| `inheritance` | 1 | Text inheritance summary |
-| `c3-linearization` | 1 | Diamond inheritance resolution |
-| `entry-points` | 1 | All state-changing entry points |
-| `function-summary` | 1 | Function visibility, modifiers, state var access |
-| `variable-order` | 1 | Storage slot layout |
-| `vars-and-auth` | 2 | State writes + authorization checks |
-| `modifiers` | 2 | Guard coverage per function |
-| `not-pausable` | 2 | Missing pause guards |
-| `data-dependency` | 2 | User input to state change tracking |
-| `call-graph` | 2 | Cross-function call relationships |
+| Printer | Purpose |
+|---------|---------|
+| `human-summary` | Contract count, SLOC, ERCs, complexity overview |
+| `function-summary` | **Anti-hallucination ground truth.** Per-function: visibility, modifiers, state vars read/written |
+| `entry-points` | All state-changing external/public functions and their accessed variables |
+| `vars-and-auth` | State variables modified + authorization checks per function |
+| `inheritance` | Text-based inheritance relationships between contracts |
+| `inheritance-graph` | Inheritance hierarchy visualization (DOT) |
+| `variable-order` | Storage slot layout — variable ordering per contract |
+| `modifiers` | Which modifiers are applied to each function |
+| `require` | All `require` and `assert` conditions per function |
+| `not-pausable` | Functions missing `whenNotPaused` guard |
+| `call-graph` | Cross-function call relationships (DOT) |
+| `data-dependency` | How user input flows through to state variables |
+| `function-id` | Keccak256 function selectors (check for collisions in proxy patterns) |
 
 ## Contributing
 
 Contributions welcome — especially:
 
-- **New platform templates** (`resources/templates/sherlock.md`, etc.)
+- **New platform templates** (`resources/templates/immunefi.md`, etc.)
 - **Detector-to-PoC mappings** for additional Slither detectors
-- **Scenario-specific checklists** (lending protocols, AMMs, bridges, etc.)
+- **Domain-specific playbooks** for new protocol types
 
 ## References
 
@@ -194,6 +233,7 @@ Contributions welcome — especially:
 - [Foundry Book](https://book.getfoundry.sh/)
 - [Code4rena Submission Guidelines](https://docs.code4rena.com/competitions/submission-guidelines)
 - [Code4rena Severity Categorization](https://docs.code4rena.com/competitions/severity-categorization)
+- [Sherlock Judging Rules](https://docs.sherlock.xyz/audits/judging/judging)
 
 ## License
 

@@ -385,7 +385,7 @@ Only include if the protocol uses a proxy/upgradeable pattern.
 
 ## 12. Key Invariants
 
-These are the rules that must NEVER be broken. Each one should map to an `invariant_` test in Phase 5 (Additional Verification).
+These are the rules that must NEVER be broken. When time permits in Phase 5 (Additional Verification), write `invariant_` tests for the most critical entries.
 
 | # | Invariant | Enforced By |
 |---|-----------|------------|

@@ -243,17 +243,8 @@ forge build
 | `forge flatten` | `f` | Flatten contract with imports into single file |
 | `forge inspect` | `in` | Get contract ABI, bytecode, storage layout, etc. |
 | `forge coverage` | — | Generate code coverage report |
-| `forge snapshot` | `s` | Create gas snapshot per test |
 | `forge tree` | `tr` | Dependency graph visualization |
 | `forge config` | `co` | Display current configuration |
-| `forge create` | `c` | Deploy a contract |
-| `forge verify-contract` | `v` | Verify contract on Etherscan |
-| `forge doc` | — | Generate NatSpec documentation |
-| `forge selectors` | `se` | Function selector utilities |
-| `forge cache` | — | Manage Foundry cache |
-| `forge clone` | — | Retrieve contract from Etherscan |
-| `forge fmt` | — | Format Solidity files |
-| `forge eip712` | — | Generate EIP-712 struct encodings |
 
 ### Global Flags
 
@@ -278,23 +269,11 @@ All available fields (primary name listed first, common aliases in parentheses):
 | `abi` | — | Contract ABI |
 | `bytecode` | `bytes`, `b` | Creation bytecode |
 | `deployedBytecode` | `deployed-bytecode`, `deployed` | Runtime bytecode |
-| `assembly` | `asm` | Assembly output |
-| `assemblyOptimized` | `asmOptimized`, `asmo` | Optimized assembly |
-| `legacyAssembly` | — | Legacy assembly JSON |
 | `methodIdentifiers` | `methods`, `mi` | Function selectors |
 | `gasEstimates` | `gas` | Gas estimates |
 | `storageLayout` | `storage-layout`, `storage` | Storage layout |
-| `devdoc` | `dev-doc` | Developer documentation |
-| `userdoc` | `user-doc` | User documentation |
-| `ir` | `IR` | Yul IR |
-| `irOptimized` | `ir-optimized`, `iro` | Optimized Yul IR |
-| `metadata` | `meta` | Contract metadata |
-| `ewasm` | `e-wasm` | eWASM output |
 | `errors` | `er` | Error selectors |
 | `events` | `ev` | Event signatures and topics |
-| `standardJson` | `standard-json` | Standard JSON input |
-| `libraries` | `lib`, `libs` | Linked libraries |
-| `linearization` | `linearizedBases` | C3 linearization order |
 
 Auditor-relevant examples:
 
@@ -356,8 +335,8 @@ forge test --no-match-path test/helpers/
 ### Forking Options
 
 ```bash
-# Fork mainnet for tests (--fork-url is an alias for --rpc-url)
-forge test --rpc-url https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY
+# Fork mainnet for tests (--rpc-url is an alias for --fork-url)
+forge test --fork-url https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY
 
 # Fork at specific block
 forge test --rpc-url $RPC_URL --fork-block-number 18000000
@@ -392,18 +371,6 @@ function testFuzz_Deposit(uint256 amount) public {
 }
 ```
 
-### Gas Reporting
-
-```bash
-forge test --gas-report
-forge snapshot  # creates .gas-snapshot file
-```
-
-### Watch Mode
-
-```bash
-forge test --watch
-```
 
 ---
 
@@ -891,21 +858,12 @@ anvil --fork-url $ETH_RPC_URL --fork-block-number 18000000
 | Flag | Default | Description |
 |------|---------|-------------|
 | `-p, --port <PORT>` | 8545 | Listen port |
-| `--host <IP>` | 127.0.0.1 | Server host |
-| `-a, --accounts <NUM>` | 10 | Number of dev accounts |
-| `--balance <NUM>` | 10000 | Initial ETH per account |
-| `-m, --mnemonic <PHRASE>` | — | BIP39 mnemonic for accounts |
 | `--chain-id <ID>` | 31337 | Chain ID |
 | `--hardfork <NAME>` | — | EVM version (cancun, shanghai, paris, london, prague) |
 | `-b, --block-time <SEC>` | — | Auto-mine interval (instant if omitted) |
-| `--no-mining` | — | Disable auto-mining |
 | `-f, --fork-url <URL>` | — | Remote RPC endpoint to fork |
 | `--fork-block-number <N>` | latest | Block number to fork from |
 | `--auto-impersonate` | — | Allow impersonating any account |
-| `--gas-limit <LIMIT>` | — | Block gas limit |
-| `--state <PATH>` | — | Load/dump state from file |
-| `--dump-state <PATH>` | — | Dump state on exit |
-| `--load-state <PATH>` | — | Load state from snapshot |
 
 ### Auditor Workflow with Anvil
 
@@ -958,30 +916,21 @@ cast call 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 "balanceOf(address)" 0xd8dA
 | `cast interface <addr>` | Generate Solidity interface from on-chain ABI |
 | `cast source <addr>` | Fetch verified source from Etherscan |
 
-### Block & Chain
+### Event Logs
 
 | Command | Description |
 |---------|-------------|
-| `cast block <block_num>` | Get block info |
-| `cast block-number` | Get latest block number |
-| `cast chain-id` | Get chain ID |
-| `cast gas-price` | Get current gas price |
-| `cast base-fee` | Get block base fee |
 | `cast logs <sig> [args]` | Get event logs by signature |
 
 ### Utility
 
 | Command | Description |
 |---------|-------------|
-| `cast to-wei <value> <unit>` | Convert to wei |
-| `cast from-wei <value>` | Convert from wei |
 | `cast keccak <data>` | Keccak-256 hash |
 | `cast index <key_type> <key> <slot>` | Compute mapping storage slot |
 | `cast index-erc7201 <id>` | Compute ERC-7201 storage slot |
-| `cast proof <addr> <slots>` | Generate storage proof |
 | `cast create2` | Compute CREATE2 address |
 | `cast disassemble <bytecode>` | Disassemble bytecode |
-| `cast access-list <addr> <sig>` | Create access list for tx |
 
 ### Cast Examples for Auditors
 
@@ -1029,10 +978,6 @@ optimism = "${OP_RPC_URL}"
 [fuzz]
 runs = 256
 max_test_rejects = 65536
-
-[profile.default.fmt]
-line_length = 120
-tab_width = 4
 ```
 
 ### Key Configuration Options
@@ -1300,6 +1245,9 @@ shrink_run_limit = 5000 # Max attempts to shrink failing sequence
 # Run all invariant tests
 forge test --match-test invariant_ -vvv
 
-# Run with more depth (longer sequences)
-forge test --match-test invariant_ -vvv --fuzz-runs 1000
+# Run with more call sequences (override [invariant].runs via env var)
+FOUNDRY_INVARIANT_RUNS=1000 forge test --match-test invariant_ -vvv
+
+# Run with longer sequences (override [invariant].depth via env var)
+FOUNDRY_INVARIANT_DEPTH=500 forge test --match-test invariant_ -vvv
 ```

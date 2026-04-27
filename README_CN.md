@@ -2,7 +2,7 @@
 
 **[English](README.md) | [中文](README_CN.md)**
 
-一个 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) 自定义技能，将 Claude 打造为结构化的智能合约安全审计员。使用 **Slither** 进行静态分析，**Foundry** 进行漏洞 PoC 开发，遵循 7 阶段工作流程，旨在最大限度减少 AI 幻觉。
+一个 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) 自定义技能，将 Claude 打造为结构化的智能合约安全审计员。使用 **Slither** 进行静态分析，**Foundry** 进行漏洞 PoC 开发，遵循 7 阶段工作流程（阶段 0-6），旨在最大限度减少 AI 幻觉。
 
 ## 为什么需要这个技能？
 
@@ -12,14 +12,15 @@ AI 在审计智能合约时会产生幻觉 — 误读继承链、凭空捏造访
 
 | 阶段 | 名称 | 内容 |
 |------|------|------|
-| 0 | 环境搭建 | 检测项目类型，验证编译，识别审计场景（DeFi、代理合约、代币、跨链），选择提交平台 |
-| 1 | 结构事实建立 | Slither printer 映射继承关系、入口点、函数-状态变量关系和存储布局。**此阶段不读代码。** |
-| 2 | 攻击假设生成 | 更多 printer 映射访问控制、暂停保护缺口、验证条件、数据流。生成优先级排序的目标列表。**仍然不读代码。** |
-| 3 | 定向代码审阅 | 现在开始读 `.sol` 文件，由阶段 1-2 的输出引导。每个判断都与 printer 输出交叉验证。 |
-| 4 | 自动漏洞扫描 | Slither 检测器（全量扫描 + 定向扫描：重入、访问控制、预言机/DeFi）。与阶段 3 并行运行。 |
-| 5 | 分类与深度分析 | 将发现与代码审阅交叉对比。分类为：已确认 / 疑似 / 误报。 |
-| 6 | PoC 开发 | 为每个已确认的 High/Medium 漏洞编写 Foundry 漏洞利用测试。 |
-| 7 | 报告生成 | 按平台格式提交（默认 Code4rena）。 |
+| 0 | 环境搭建 | 检测项目类型，验证编译，识别审计场景（DeFi、代理合约、代币、跨链、质押、瞬态存储），选择提交平台 |
+| 1 | 结构侦察 | 运行 13 个 Slither printer，映射继承关系、入口点、函数-状态变量关系、存储布局、访问控制和数据流。**此阶段不读代码。** |
+| 2 | 代码库文档 | 以阶段 1 输出为指引，深入阅读源代码。生成包含 Mermaid 图表的综合代码库文档（13 个章节）和排序的攻击假设列表。 |
+| 3 | 自动扫描 | 运行 Slither 检测器（全量扫描、高危聚焦扫描、场景特定扫描）。将每个发现与阶段 2 文档交叉对比。 |
+| 4 | 定向代码审阅与分类 | 使用 24 项检查清单进行深度安全代码审阅。激活领域特定攻击手册。将发现分类为：已确认 / 疑似 / 误报。 |
+| 5 | PoC 与发现文档 | 为每个已确认/疑似发现同时编写 Foundry PoC 和发现报告。时间允许时编写不变量测试。 |
+| 6 | 最终报告组装 | 将发现组装为平台特定提交格式。严重性审查、去重、PoC 再验证。 |
+
+**阶段 0-3 严格按顺序执行。** 阶段 1 通过 printer 建立结构模型（不读代码）。阶段 2 以阶段 1 为指引阅读源代码。阶段 3 对已充分理解的代码库运行检测器。阶段 4-6 是核心分析、PoC 和报告阶段。
 
 ## 安装
 
@@ -85,13 +86,28 @@ cp -r /path/to/smart-contract-auditor/smart-contract-auditor .claude/skills/smar
 ~/.claude/skills/smart-contract-auditor/    # 全局
 # 或
 .claude/skills/smart-contract-auditor/      # 项目级
-├── SKILL.md                                # 必需
-└── resources/                              # 参考文档和模板
-    ├── slither-audit-guide.md
-    ├── foundry-audit-guide.md
-    ├── poc-template.md
-    └── templates/
-        └── code4rena.md
+├── SKILL.md                                # 必需 — 技能入口
+└── resources/
+    ├── tools/
+    │   ├── slither.md                      # 27 个 printer、99 个检测器、CLI 参数、Python API
+    │   └── foundry.md                      # Forge CLI、cheatcode、cast、anvil、PoC 工作流
+    ├── templates/
+    │   ├── structural-summary.md           # 阶段 1 输出模板
+    │   ├── codebase-report.md              # 阶段 2 输出模板（13 个章节）
+    │   ├── poc.md                          # 5 个 PoC 启动模板
+    │   ├── code4rena.md                    # Code4rena 提交格式
+    │   └── sherlock.md                     # Sherlock 提交格式
+    ├── checklists/
+    │   ├── non-standard-tokens.md          # 14 种非标准 ERC20 行为
+    │   └── domain-playbooks.md             # 10 种协议类型的攻击检查清单
+    └── phases/
+        ├── phase-0-setup.md
+        ├── phase-1-recon.md
+        ├── phase-2-docs.md
+        ├── phase-3-scanning.md
+        ├── phase-4-analysis.md
+        ├── phase-5-findings.md
+        └── phase-6-report.md
 ```
 
 ## 使用方法
@@ -114,7 +130,7 @@ cp -r /path/to/smart-contract-auditor/smart-contract-auditor .claude/skills/smar
 对这个代码库运行 slither，并为所有关键发现编写 PoC
 ```
 
-AI 将依次执行 7 个阶段：环境搭建、结构分析、攻击面映射、代码审阅、漏洞扫描、分类筛选、PoC 开发和报告生成。
+AI 将依次执行 7 个阶段：环境搭建、结构侦察、代码库文档、自动扫描、定向代码审阅与分类、PoC 开发和报告组装。
 
 ### 提交平台选择
 
@@ -123,7 +139,7 @@ AI 将依次执行 7 个阶段：环境搭建、结构分析、攻击面映射�
 | 平台 | 状态 |
 |------|------|
 | Code4rena | 已完成 |
-| Sherlock | 计划中 |
+| Sherlock | 已完成 |
 | Immunefi | 计划中 |
 | HackerOne | 计划中 |
 
@@ -133,28 +149,51 @@ AI 将依次执行 7 个阶段：环境搭建、结构分析、攻击面映射�
 
 ```
 smart-contract-auditor/
-├── SKILL.md                              # 核心技能 — 7 阶段审计工作流
+├── SKILL.md                              # 核心技能 — 7 阶段审计工作流（阶段 0-6）
 └── resources/
-    ├── slither-audit-guide.md            # 28 个 printer、103 个检测器、CLI 参数、Python API
-    ├── foundry-audit-guide.md            # Forge CLI、cheatcode、cast、anvil、PoC 开发
-    ├── poc-template.md                   # Foundry PoC 模板
-    └── templates/
-        └── code4rena.md                  # Code4rena 提交格式和检查清单
+    ├── tools/
+    │   ├── slither.md                    # 27 个 printer、99 个检测器、CLI 参数、Python API、附加工具
+    │   └── foundry.md                    # Forge CLI、cheatcode、forge-std、cast、anvil、PoC 工作流
+    ├── templates/
+    │   ├── structural-summary.md         # 阶段 1 输出模板
+    │   ├── codebase-report.md            # 阶段 2 输出模板（13 个章节，Mermaid 图表）
+    │   ├── poc.md                        # 5 个 Foundry PoC 启动模板
+    │   ├── code4rena.md                  # Code4rena 提交格式与严重性指南
+    │   └── sherlock.md                   # Sherlock 提交格式与去重模型
+    ├── checklists/
+    │   ├── non-standard-tokens.md        # 14 种非标准 ERC20 代币行为
+    │   └── domain-playbooks.md           # 领域特定攻击检查清单（10 种协议类型）
+    └── phases/
+        ├── phase-0-setup.md              # 环境搭建与范围发现
+        ├── phase-1-recon.md              # 结构侦察（13 个 printer）
+        ├── phase-2-docs.md               # 代码库文档与假设列表
+        ├── phase-3-scanning.md           # Slither 自动检测器扫描
+        ├── phase-4-analysis.md           # 定向代码审阅与分类（24 项检查清单）
+        ├── phase-5-findings.md           # PoC 与发现文档
+        └── phase-6-report.md             # 最终报告组装
 ```
 
 ## 核心特性
 
 ### 反幻觉设计
 
-技能强制执行严格的阶段顺序 — 阶段 0-2 仅使用 Slither printer（从 AST 派生的事实）建立结构模型，然后 AI 才能阅读代码。如果 AI 的代码解读与 printer 输出不一致，以 printer 为准。
+技能强制执行严格的阶段顺序 — 阶段 0 搭建环境，阶段 1 仅使用 Slither printer（从 AST 派生的事实）建立结构模型，此时不阅读代码。阶段 2 以阶段 1 为指引阅读源代码。如果 AI 的代码解读与 printer 输出不一致，以 printer 为准。
 
-### 内联 Slither 参考
+### 模块化阶段架构
 
-SKILL.md 在每个阶段中直接嵌入了最常用的 Slither 命令（18 个 printer、26 个高/中危检测器、预设扫描命令），AI 无需翻阅完整指南即可完成常规操作。
+每个阶段在 `resources/phases/` 中都有独立的详细指令文件。各阶段引用其输入（前序阶段的输出）和所需的资源文件。这使核心 `SKILL.md` 保持简洁，同时在需要时提供深入指导。
+
+### 全面的工具参考
+
+`resources/tools/slither.md` 涵盖全部 27 个 printer、99 个检测器（含严重性/置信度）、CLI 参数、Python API 和已知局限性。`resources/tools/foundry.md` 涵盖 Forge CLI、所有 cheatcode 签名、forge-std 辅助函数、主网 fork、Anvil、Cast 和不变量测试。
 
 ### 检测器到 PoC 的映射
 
 针对每个常见的 Slither 检测器发现（重入、任意转账、未保护的升级等），技能提供了具体的 PoC 编写策略 — 部署什么合约、使用哪些 cheatcode、断言什么结果。
+
+### 领域特定攻击手册
+
+10 种协议类型的攻击检查清单：Vault/ERC4626、AMM/DEX、借贷、代理/可升级、治理、跨链/桥接、质押/再质押、永续合约/衍生品、代币发行/联合曲线、收益聚合器。
 
 ### 错误恢复
 
@@ -162,31 +201,31 @@ Slither 编译失败时的三级回退机制：修复并重试、部分分析、
 
 ## 使用的 Slither Printer
 
-这些 printer 是反幻觉工作流的核心：
+这 13 个 printer 在阶段 1 中运行，在任何代码阅读之前建立结构模型：
 
-| Printer | 阶段 | 用途 |
-|---------|------|------|
-| `human-summary` | 1 | 范围和复杂度概览 |
-| `loc` | 1 | 代码行数统计 |
-| `inheritance-graph` | 1 | 完整合约继承关系（DOT 格式） |
-| `inheritance` | 1 | 文本继承摘要 |
-| `c3-linearization` | 1 | 菱形继承解析 |
-| `entry-points` | 1 | 所有状态变更入口点 |
-| `function-summary` | 1 | 函数可见性、修饰符、状态变量访问 |
-| `variable-order` | 1 | 存储槽位布局 |
-| `vars-and-auth` | 2 | 状态写入 + 权限检查 |
-| `modifiers` | 2 | 各函数的修饰符覆盖情况 |
-| `not-pausable` | 2 | 缺失暂停保护的函数 |
-| `data-dependency` | 2 | 用户输入到状态变更的追踪 |
-| `call-graph` | 2 | 跨函数调用关系 |
+| Printer | 用途 |
+|---------|------|
+| `human-summary` | 合约数量、SLOC、ERC 标准、复杂度概览 |
+| `function-summary` | **反幻觉基准真值。** 每个函数的可见性、修饰符、读写的状态变量 |
+| `entry-points` | 所有状态变更的 external/public 函数及其访问的变量 |
+| `vars-and-auth` | 各函数修改的状态变量 + 授权检查 |
+| `inheritance` | 合约间文本继承关系 |
+| `inheritance-graph` | 继承层次结构可视化（DOT） |
+| `variable-order` | 存储槽位布局 — 每个合约的变量排序 |
+| `modifiers` | 各函数应用的修饰符 |
+| `require` | 各函数的所有 `require` 和 `assert` 条件 |
+| `not-pausable` | 缺失 `whenNotPaused` 保护的函数 |
+| `call-graph` | 跨函数调用关系（DOT） |
+| `data-dependency` | 用户输入如何流向状态变量 |
+| `function-id` | Keccak256 函数选择器（检查代理模式中的碰撞） |
 
 ## 参与贡献
 
 欢迎贡献，特别是：
 
-- **新平台模板**（`resources/templates/sherlock.md` 等）
+- **新平台模板**（`resources/templates/immunefi.md` 等）
 - **更多检测器的 PoC 映射**
-- **特定场景检查清单**（借贷协议、AMM、跨链桥等）
+- **新协议类型的领域特定攻击手册**
 
 ## 参考资料
 
@@ -194,6 +233,7 @@ Slither 编译失败时的三级回退机制：修复并重试、部分分析、
 - [Foundry Book](https://book.getfoundry.sh/)
 - [Code4rena 提交指南](https://docs.code4rena.com/competitions/submission-guidelines)
 - [Code4rena 严重性分类](https://docs.code4rena.com/competitions/severity-categorization)
+- [Sherlock 评判规则](https://docs.sherlock.xyz/audits/judging/judging)
 
 ## 许可证
 

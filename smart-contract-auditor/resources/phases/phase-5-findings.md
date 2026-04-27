@@ -10,7 +10,7 @@
 
 - `tools/foundry.md` §6 for cheatcodes, §7 for helpers/assertions, §12-13 for PoC workflow and template, §14 for invariant testing
 - `templates/poc.md` for starter templates (ETH drain, ERC20 drain, access control bypass, flash loan, oracle manipulation)
-- `tools/slither.md` §15 for detector-to-PoC strategies
+- `tools/slither.md` §13 for detector-to-PoC strategies
 
 ## Inputs
 

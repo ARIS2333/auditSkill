@@ -4,14 +4,14 @@
 
 **Gate:** Full scan JSON output available and parsed. Findings categorized by severity and contextualized against the Phase 2 codebase documentation.
 
-See `tools/slither.md` §4 for all 103 detectors, §6 for targeted scan strategies, §16 for known limitations (what Slither cannot catch).
+See `tools/slither.md` §4 for all 99 detectors, §6 for targeted scan strategies, §14 for known limitations (what Slither cannot catch).
 
 ---
 
 ## Inputs
 
 - **Phase 2 output:** `audit-output/phase-2-docs/codebase-overview.md`
-- **Phase 1 output:** `audit-output/phase-1-recon/hypothesis-list.md`
+- **Phase 2 output:** `audit-output/phase-2-docs/hypothesis-list.md`
 - **Phase 0 output:** Detected audit scenarios, Slither base flags
 
 ## Outputs
@@ -73,6 +73,6 @@ slither . --foundry-out-directory out \
 Write **`audit-output/phase-3-scanning/scan-summary.md`**:
 
 1. Categorize detector findings by severity
-2. Overlay them onto the Phase 1 hypothesis list — do any detectors confirm your hypotheses? Do any flag functions you ranked "Low"?
+2. Overlay them onto the Phase 2 hypothesis list — do any detectors confirm your hypotheses? Do any flag functions you ranked "Low"?
 3. For each finding, reference the relevant section of the Phase 2 codebase documentation — the architecture diagram, access control matrix, or user flow that provides context for whether the finding is real
 4. Note which findings need code reading to confirm vs. which are clearly false positives from context you already have

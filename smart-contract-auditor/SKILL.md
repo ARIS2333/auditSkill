@@ -17,8 +17,9 @@ You are an ethical smart contract security auditor for EVM-compatible blockchain
 | `resources/tools/slither.md` | All 27 printers, 99 detectors with severity/confidence, CLI flags, Python API, additional tools, detector-to-PoC strategies, known limitations |
 | `resources/tools/foundry.md` | Forge CLI, all cheatcode signatures, forge-std helpers, assertions, mainnet forking, Anvil, Cast, `foundry.toml` config, PoC workflow, invariant testing |
 | `resources/templates/` | Output templates and submission formats |
+| `resources/templates/structural-summary.md` | Phase 1 output template: codebase snapshot + printer output index |
+| `resources/templates/codebase-report.md` | Phase 2 output template: full Mermaid-based codebase documentation (13 sections) |
 | `resources/templates/poc.md` | PoC templates: ETH drain, ERC20 drain, access control bypass, flash loan attack, oracle manipulation |
-| `resources/templates/codebase-report.md` | Full Mermaid-based codebase documentation template (13 sections) |
 | `resources/templates/code4rena.md` | Code4rena submission format (High/Medium individual + QA report) |
 | `resources/templates/sherlock.md` | Sherlock submission format (severity rules, dedup model, pre-conditions) |
 | `resources/checklists/` | Security reference checklists |
@@ -31,8 +32,9 @@ You are an ethical smart contract security auditor for EVM-compatible blockchain
 | Starting or resuming a specific phase | `resources/phases/phase-N-*.md` for that phase |
 | Slither printer/detector/CLI syntax | `resources/tools/slither.md` |
 | Foundry cheatcode/helper/config syntax | `resources/tools/foundry.md` |
-| Writing a PoC | `resources/templates/poc.md` + `resources/tools/foundry.md` §6, §12-14 |
+| Writing a PoC | `resources/templates/poc.md` + `resources/tools/foundry.md` §6, §12-13 |
 | Writing invariant tests | `resources/tools/foundry.md` §14 |
+| Writing structural summary | `resources/templates/structural-summary.md` |
 | Writing codebase documentation | `resources/templates/codebase-report.md` |
 | Auditing token interactions | `resources/checklists/non-standard-tokens.md` |
 | Checking domain-specific attack vectors | `resources/checklists/domain-playbooks.md` |
@@ -85,13 +87,24 @@ At the start of Phase 0, create this folder structure. All intermediate outputs,
 ```
 audit-output/
 ├── phase-1-recon/
-│   ├── printers/                  # Raw Slither printer output files
-│   │   ├── inheritance-graph.dot
-│   │   └── ...
-│   ├── structural-summary.md      # Contract count, SLOC, ERCs, inheritance tree, storage layout
-│   └── hypothesis-list.md         # Ranked attack targets with justification from printer data
+│   ├── printers/                  # One file per printer (13 total)
+│   │   ├── human-summary.txt
+│   │   ├── function-summary.txt
+│   │   ├── entry-points.txt
+│   │   ├── vars-and-auth.txt
+│   │   ├── inheritance.txt
+│   │   ├── inheritance-graph*.dot
+│   │   ├── variable-order.txt
+│   │   ├── modifiers.txt
+│   │   ├── require.txt
+│   │   ├── not-pausable.txt
+│   │   ├── call-graph*.dot
+│   │   ├── data-dependency.txt
+│   │   └── function-id.txt
+│   └── structural-summary.md      # Contract count, SLOC, ERCs, inheritance tree, storage layout, printer output guide
 ├── phase-2-docs/
-│   └── codebase-overview.md       # Mermaid-based codebase documentation (fact-checked)
+│   ├── codebase-overview.md       # Mermaid-based codebase documentation (fact-checked)
+│   └── hypothesis-list.md         # Ranked attack targets with justification from printers + code reading
 ├── phase-3-scanning/
 │   ├── slither-full-report.json   # Full detector scan output
 │   ├── slither-high-report.json   # High-impact focused scan
@@ -134,21 +147,21 @@ Set up the audit output directory, detect project type, verify compilation and S
 
 #### Phase 1: Structural Reconnaissance
 **File:** `resources/phases/phase-1-recon.md`
-**Gate:** You can answer every structural question without reading code, AND you have a ranked hypothesis list.
+**Gate:** You can answer every structural question without reading code, AND the structural summary includes a printer output guide.
 
-Run all structural and attack-oriented Slither printers. Synthesize a prioritized attack hypothesis list from printer output. Do NOT read `.sol` files during this phase. The `function-summary` printer is the single most important anti-hallucination artifact.
+Run 13 Slither printers, each saved to its own file. Write a structural summary with a printer output guide so later phases know where to find information. Do NOT read `.sol` files during this phase. The `function-summary` printer is the single most important anti-hallucination artifact.
 
 #### Phase 2: Codebase Documentation
 **File:** `resources/phases/phase-2-docs.md`
-**Gate:** All 13 sections from the template populated. Fact-Checking Checklist passes completely.
+**Gate:** All 13 sections from the template populated. Fact-Checking Checklist passes completely. Hypothesis list produced.
 
-Dive into source code using Phase 1 as your guide. Produce the comprehensive codebase documentation using `resources/templates/codebase-report.md`. This document becomes the shared reference for all subsequent phases — architecture, user flows, access control, value flow, invariants.
+Dive into source code using Phase 1 as your guide. Proactively re-read printer output files throughout — they are large and you should consult them fresh for each section rather than relying on memory. Produce the comprehensive codebase documentation using `resources/templates/codebase-report.md`. At the end, synthesize a ranked attack hypothesis list informed by both structural data and code reading. This document becomes the shared reference for all subsequent phases.
 
 #### Phase 3: Automated Scanning
 **File:** `resources/phases/phase-3-scanning.md`
 **Gate:** Full scan JSON output available and parsed. Findings categorized and contextualized against Phase 2 documentation.
 
-Run Slither detectors (full scan, high-impact focused, scenario-specific). Contextualize every finding against the Phase 2 codebase document. Prepare the scan summary overlaid on the Phase 1 hypothesis list.
+Run Slither detectors (full scan, high-impact focused, scenario-specific). Contextualize every finding against the Phase 2 codebase document. Prepare the scan summary overlaid on the Phase 2 hypothesis list.
 
 #### Phase 4: Targeted Code Reading & Triage
 **File:** `resources/phases/phase-4-analysis.md`
@@ -170,44 +183,11 @@ Assemble Phase 5 write-ups into the final submission format. Review severity con
 
 ---
 
-## Prioritization & Time Management
-
-In competitive audits, you have limited time. Allocate effort strategically.
-
-### Time Budget Framework
-
-| Codebase Size | Recommended Focus |
-|---------------|-------------------|
-| < 500 SLOC | Full deep review of every function is feasible |
-| 500-2000 SLOC | Focus 70% effort on top 5 contracts by complexity. Skim the rest. |
-| > 2000 SLOC | Focus 60% effort on top 3 contracts by complexity. Use Phase 1 ranking aggressively. |
-
-### When to Go Deep vs. Broad
-
-**Go deep** when:
-- A function handles significant value (ETH transfers, token mints, share calculation)
-- Access control is complex or non-standard
-- You found something suspicious but can't yet prove it
-- The function interacts with external contracts
-
-**Stay broad** when:
-- Functions are simple getters/setters with standard modifiers
-- Code follows well-tested patterns (OpenZeppelin's standard implementations)
-- You've already found several high-value bugs — diminishing returns in one area
-
-### When to Abandon a Lead
-
-- You've spent 30+ minutes and can't construct a viable attack path
-- The finding depends on assumptions that are clearly unrealistic (admin is malicious AND incompetent)
-- The impact is dust amounts (< $1 at any reasonable TVL)
-
----
-
 ## Iteration & Feedback Loops
 
 The phase numbers suggest a linear flow, but real audits loop.
 
 - **Phase 2 documentation reveals gaps:** Writing the codebase doc forces you to articulate things you only vaguely understood. If you can't write a section confidently, run more printers or read specific contracts before proceeding.
-- **Phase 3 finds something Phase 1 missed:** If a detector flags a function your hypothesis list ranked "Low," revisit your structural analysis. What did you overlook?
+- **Phase 3 finds something Phase 2 missed:** If a detector flags a function your hypothesis list ranked "Low," revisit your structural analysis. What did you overlook?
 - **Phase 4 code reading reveals new info:** Update the Phase 2 codebase document with new flows, invariants, or trust assumptions discovered during deep code reading.
 - **Phase 5 PoC fails:** Don't just reclassify — ask whether the failure reveals a misunderstanding of the protocol. Re-check Phase 1 structural data and Phase 2 documentation.

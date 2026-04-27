@@ -20,10 +20,8 @@ Comprehensive reference for smart contract auditors using Slither for static vul
 10. [Additional Slither Tools](#10-additional-slither-tools)
 11. [Python API for Custom Analysis](#11-python-api-for-custom-analysis)
 12. [Custom Detector Development](#12-custom-detector-development)
-13. [Audit Workflow](#13-audit-workflow)
-14. [Audit Report Template](#14-audit-report-template)
-15. [Detector-to-PoC Mapping](#15-detector-to-poc-mapping)
-16. [Known Limitations](#16-known-limitations)
+13. [Detector-to-PoC Mapping](#13-detector-to-poc-mapping)
+14. [Known Limitations](#14-known-limitations)
 
 ---
 
@@ -1110,159 +1108,7 @@ slither . --detect my-detector
 
 ---
 
-## 13. Audit Workflow
-
-### Phase 1: Pre-Audit Setup
-
-```bash
-# 1. Verify project compiles
-forge build  # (for Foundry projects)
-
-# 2. Quick recon with human summary
-slither . --print human-summary --foundry-out-directory out
-
-# 3. Lines of code metrics
-slither . --print loc --foundry-out-directory out
-```
-
-### Phase 2: Structural Analysis
-
-```bash
-# 4. Map inheritance hierarchy
-slither . --print inheritance-graph,inheritance --foundry-out-directory out
-
-# 5. Enumerate attack surface (entry points + function summary)
-slither . --print entry-points,function-summary --foundry-out-directory out
-
-# 6. Identify access control patterns
-slither . --print vars-and-auth,modifiers,not-pausable --foundry-out-directory out
-
-# 7. Review storage layout
-slither . --print variable-order --foundry-out-directory out
-
-# 8. Check function selectors for collisions
-slither . --print function-id --foundry-out-directory out
-
-# 9. Detect Foundry cheatcode usage (if applicable)
-slither . --print cheatcode --foundry-out-directory out
-```
-
-### Phase 3: Vulnerability Scanning
-
-```bash
-# 10. Full scan with JSON output
-slither . --foundry-out-directory out \
-  --json slither-full-report.json \
-  --exclude-dependencies \
-  --filter-paths 'lib|test|script'
-
-# 11. High-impact focused re-scan
-slither . --foundry-out-directory out \
-  --detect reentrancy-eth,reentrancy-no-eth,arbitrary-send-eth,arbitrary-send-erc20,controlled-delegatecall,suicidal,unprotected-upgrade,uninitialized-state,uninitialized-storage,unchecked-transfer,weak-prng,msg-value-loop \
-  --json slither-high-severity.json
-
-# 12. Upgradeability check (if proxy pattern)
-slither-check-upgradeability . ImplementationContract
-```
-
-### Phase 4: Triage & False Positive Filtering
-
-```bash
-# 13. Interactive triage
-slither . --foundry-out-directory out --triage-mode
-```
-
-### Phase 5: PoC Development
-
-For each confirmed High/Medium finding, write a Foundry PoC (see [foundry.md](./foundry.md)).
-
-### Phase 6: Report Generation
-
-```bash
-# Markdown checklist output
-slither . --foundry-out-directory out --checklist > findings-checklist.md
-
-# SARIF for GitHub integration
-slither . --foundry-out-directory out --sarif findings.sarif
-```
-
----
-
-## 14. Audit Report Template
-
-```markdown
-# Smart Contract Security Audit Report
-
-## Audit Scope
-
-- **Target Contract(s):** [Names & Addresses]
-- **Solidity Version:** [Version]
-- **Audit Date:** [Date]
-- **Tools Used:** Slither v[X], Foundry v[X]
-
-## Executive Summary
-
-| Severity | Count |
-|----------|-------|
-| High | X |
-| Medium | X |
-| Low | X |
-| Informational | X |
-
-## 1. Contract Architecture
-
-### Inheritance Hierarchy
-[Inheritance graph summary, linearization order, access control inheritance]
-
-### Attack Surface
-[External/public functions, state-modifying functions, user-controlled inputs]
-
-### Storage Layout
-[Variable ordering, slot assignments, packing details]
-
-## 2. Findings
-
-### [H-01] [Vulnerability Title]
-
-- **Slither Detector:** `detector-id`
-- **Severity:** High
-- **Confidence:** High
-- **Location:** `ContractName.sol#L25-L40`
-
-**Description:**
-[Technical explanation of the vulnerability]
-
-**Impact:**
-[Business/security impact]
-
-**Proof of Concept:**
-```solidity
-// Foundry PoC code
-```
-
-**Execution:**
-```bash
-forge test --match-test test_H01_Exploit -vvvv
-```
-
-**Recommendation:**
-[Mitigation steps]
-
----
-
-### [M-01] [Vulnerability Title]
-[Repeat structure for each finding]
-
-## 3. Informational Notes
-[Non-critical observations, code quality improvements]
-
-## 4. Scope Limitations
-[What was not tested, assumptions, dependencies on external state]
-```
-
----
-
-## 15. Detector-to-PoC Mapping
+## 13. Detector-to-PoC Mapping
 
 When writing a PoC for a specific detector finding, use these strategies:
 
@@ -1282,7 +1128,7 @@ When writing a PoC for a specific detector finding, use these strategies:
 
 ---
 
-## 16. Known Limitations
+## 14. Known Limitations
 
 Understanding what Slither **cannot** do is as important as knowing what it can. These blind spots define where manual code review and Foundry invariant testing must fill the gap.
 
@@ -1296,7 +1142,7 @@ Understanding what Slither **cannot** do is as important as knowing what it can.
 | **Multi-transaction attack sequences** | Slither analyzes single-function execution paths; attacks requiring a specific sequence of transactions across blocks are invisible | Manual attack path construction + Foundry multi-step PoCs |
 | **Inline assembly semantics** | Slither can detect `assembly` usage but doesn't deeply analyze the Yul/EVM opcodes within assembly blocks | Manual review of every `assembly` block for correctness |
 | **`delegatecall` side effects** | `function-summary` printer reports variables read/written in the context of the calling contract, but `delegatecall` executes in the caller's storage context — the actual storage writes may differ | Cross-reference `variable-order` of both proxy and implementation; manually verify storage alignment |
-| **Token callback reentrancy** | ERC777 `tokensReceived`, ERC721 `onERC721Received`, ERC1155 `onERC1155Received` hooks create reentrant calls inside token transfer, invisible to Slither | Check `resources/non-standard-tokens.md` §8 for token callback patterns |
+| **Token callback reentrancy** | ERC777 `tokensReceived`, ERC721 `onERC721Received`, ERC1155 `onERC1155Received` hooks create reentrant calls inside token transfer, invisible to Slither | Check `checklists/non-standard-tokens.md` §8 for token callback patterns |
 | **Economic / game-theoretic exploits** | Flash loan sandwich attacks, MEV extraction, funding rate manipulation — Slither cannot model economic incentives | Manual analysis using domain-specific playbooks |
 | **Transient storage (EIP-1153)** | `TSTORE`/`TLOAD` are recent opcodes; Slither support may be incomplete | Manual review of all transient storage usage |
 

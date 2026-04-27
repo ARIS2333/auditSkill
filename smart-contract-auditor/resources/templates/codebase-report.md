@@ -10,20 +10,24 @@ Replace all `[bracketed placeholders]` with actual values. Delete sections that 
 
 This is NOT a reformatting of Slither printer output — you must go through the actual source code to fill in context that printers cannot provide (protocol purpose, user flows, fee logic, state transitions, trust assumptions). Use the printers as your guide and fact-checking source, not as your only input.
 
-| Report Section | Primary Source | Requires Code Reading? |
-|---------------|---------------|----------------------|
-| System Overview | README, code comments, contract names | Yes — understand the protocol's purpose |
-| Project Structure | `ls`/`find` on project directory | Light — annotate each file/directory's purpose |
-| Architecture | `inheritance-graph` + `call-graph` | Light — verify relationships |
-| Contract Inventory | `human-summary` + `loc` | Light — add purpose descriptions |
-| Contract Deep Dives | `variable-order` + `function-summary` + `entry-points` + `modifiers` | Yes — understand function logic |
-| User Flows | `call-graph` + code reading | Yes — trace complete flows |
-| Access Control Matrix | `vars-and-auth` + `modifiers` | Yes — verify guard logic |
-| Value Flow | `function-summary` (payable, transfer, mint, burn) | Yes — trace token/ETH movement |
-| State Machine | `not-pausable` + code reading | Yes — identify state transitions |
-| External Dependencies | `call-graph` (external nodes) + code reading | Yes — identify failure modes |
-| Upgrade & Migration | `variable-order` + `slither-check-upgradeability` | Yes — verify storage layout |
-| Key Invariants | Synthesized from Phase 1 hypothesis list + code reading | Yes — identify protocol rules |
+### Reading Printer Output Files
+
+All printer outputs live in `audit-output/phase-1-recon/printers/`. **For each section below, read the listed files fresh** — do not rely on memory from earlier reads. These files can be large, and misremembering a detail (e.g., which modifier guards a function) is a hallucination source.
+
+| Report Section | Read These Files Before Writing | Code Reading? |
+|---------------|-------------------------------|---------------|
+| System Overview | — | Yes — README, code comments, contract names |
+| Project Structure | — | Light — `ls`/`find` + annotate |
+| Architecture | `printers/inheritance-graph*.dot`, `printers/call-graph*.dot` | Light — verify relationships |
+| Contract Inventory | `printers/human-summary.txt`, `printers/inheritance.txt` | Light — add purpose descriptions |
+| Contract Deep Dives | `printers/function-summary.txt`, `printers/variable-order.txt`, `printers/entry-points.txt`, `printers/modifiers.txt` | Yes — understand function logic |
+| User Flows | `printers/call-graph*.dot`, `printers/function-summary.txt` | Yes — trace complete flows |
+| Access Control Matrix | `printers/vars-and-auth.txt`, `printers/modifiers.txt` | Yes — verify guard logic |
+| Value Flow | `printers/function-summary.txt` (filter: payable, transfer, mint, burn) | Yes — trace token/ETH movement |
+| State Machine | `printers/not-pausable.txt` | Yes — identify state transitions |
+| External Dependencies | `printers/call-graph*.dot`, `printers/data-dependency.txt` | Yes — identify failure modes |
+| Upgrade & Migration | `printers/variable-order.txt` | Yes — verify storage layout |
+| Key Invariants | Synthesized from hypothesis list + code reading | Yes — identify protocol rules |
 | Known Risks & Trust Assumptions | Code reading (updated with Phase 3 detector findings) | Yes — assess trust boundaries |
 
 ---
@@ -120,7 +124,7 @@ flowchart TB
 - Use subgraphs to group by trust boundary
 - Never more than ~15 nodes — split into multiple diagrams if needed
 
-**Populated from:** `inheritance-graph` + `call-graph` printers
+**Populated from:** Read `printers/inheritance-graph*.dot` + `printers/call-graph*.dot`
 
 ---
 
@@ -130,7 +134,7 @@ flowchart TB
 |----------|-----|---------|-------------|----------|
 | [Name.sol] | [N] | [One sentence] | [Yes (UUPS) / No] | [Parent contracts] |
 
-**Populated from:** `human-summary` + `loc` printers
+**Populated from:** Read `printers/human-summary.txt` + `printers/inheritance.txt`
 
 ---
 
@@ -153,7 +157,7 @@ ContractName → BaseContract → OpenZeppelinX
 |----------|------|------------|---------|
 | [name] | [type] | [public/private/internal] | [what it stores] |
 
-**Populated from:** `variable-order` + `function-summary` printers
+**Populated from:** Read `printers/variable-order.txt` + `printers/function-summary.txt`
 
 #### Functions
 
@@ -161,7 +165,7 @@ ContractName → BaseContract → OpenZeppelinX
 |----------|-----------|-----------|---------------|-------------|
 | [name] | [external/public] | [modifier list] | [reads X, writes Y] | [what it does] |
 
-**Populated from:** `function-summary` + `entry-points` printers
+**Populated from:** Read `printers/function-summary.txt` + `printers/entry-points.txt`
 
 #### Constants & Immutables
 
@@ -189,7 +193,7 @@ ContractName → BaseContract → OpenZeppelinX
 |----------|---------|---------|
 | [name] | [what it checks] | [function list] |
 
-**Populated from:** `modifiers` printer
+**Populated from:** Read `printers/modifiers.txt`
 
 #### Assembly Usage
 
@@ -236,7 +240,7 @@ sequenceDiagram
 - Zero amount: [what happens]
 - At deposit cap: [what happens]
 
-**Populated from:** `call-graph` printer + Foundry `-vvvv` trace output
+**Populated from:** Read `printers/call-graph*.dot` + `printers/function-summary.txt` + Foundry `-vvvv` trace output
 
 ---
 
@@ -273,7 +277,7 @@ flowchart LR
 
 [Document how roles can be changed. Who can grant/revoke roles? Can the owner change the timelock delay?]
 
-**Populated from:** `vars-and-auth` + `modifiers` printers
+**Populated from:** Read `printers/vars-and-auth.txt` + `printers/modifiers.txt`
 
 ---
 
@@ -305,7 +309,7 @@ shares = (depositAmount * totalShares) / totalAssets
 assets = (shareAmount * totalAssets) / totalShares
 ```
 
-**Populated from:** `function-summary` (filter: payable, transfer, mint, burn)
+**Populated from:** Read `printers/function-summary.txt` (filter: payable, transfer, mint, burn)
 
 ---
 
@@ -332,7 +336,7 @@ stateDiagram-v2
 | Emergency | No | Yes (partial) | Limited | Auto |
 | Shutdown | No | Yes (pro-rata) | No | No |
 
-**Populated from:** `not-pausable` printer + code reading of state transition functions
+**Populated from:** Read `printers/not-pausable.txt` + code reading of state transition functions
 
 ---
 
@@ -348,7 +352,7 @@ stateDiagram-v2
 |------|-----------|-----------|----------------|
 | [ETH/USD] | [1h] | [0.5%] | [`require(updatedAt > block.timestamp - 3600)`] |
 
-**Populated from:** `call-graph` (external contract nodes) + code reading
+**Populated from:** Read `printers/call-graph*.dot` + `printers/data-dependency.txt` + code reading
 
 ---
 
@@ -375,7 +379,7 @@ Only include if the protocol uses a proxy/upgradeable pattern.
 
 [Who can trigger upgrades? What timelock? Is there a safety check (e.g., UUPS `_authorizeUpgrade`)?]
 
-**Populated from:** `variable-order` printer + `slither-check-upgradeability` output
+**Populated from:** Read `printers/variable-order.txt` + `slither-check-upgradeability` output
 
 ---
 
@@ -390,7 +394,7 @@ These are the rules that must NEVER be broken. Each one should map to an `invari
 | 3 | Share price never decreases outside of loss events | [Rounding always favors vault] |
 | 4 | Withdrawals never revert in Paused state | [Separate pause flags for deposit/withdraw] |
 
-**Populated from:** Synthesized from Phase 1 hypothesis list + Phase 2/4 code reading
+**Populated from:** Synthesized from Phase 2 hypothesis list + Phase 2/4 code reading
 
 ---
 
@@ -418,7 +422,7 @@ Useful for reading raw calldata in multisig transactions and timelock queues.
 |----------|----------|----------|
 | [`0xa694fc3a`] | [`deposit(uint256)`] | [Vault] |
 
-**Populated from:** `function-id` printer
+**Populated from:** Read `printers/function-id.txt`
 ````
 
 ---
@@ -447,12 +451,12 @@ Useful for reading raw calldata in multisig transactions and timelock queues.
 
 This document builds the mental model for the entire audit. Hallucinations here propagate into every subsequent phase. Before marking the document complete:
 
-**Structural verification (cross-check against Slither printer output):**
+**Structural verification (re-read each printer file to cross-check):**
 
-- [ ] Every contract relationship in the Architecture diagram exists in `inheritance-graph` and `call-graph` output (or is justified by code reading of delegatecall/interface calls)
-- [ ] Every function listed in Contract Deep Dives matches `function-summary` — visibility, modifiers, and state variables read/written are correct
-- [ ] Every access control claim in the Access Control Matrix matches `vars-and-auth` and `modifiers` output
-- [ ] Storage layout in Upgrade & Migration matches `variable-order` output
+- [ ] Every contract relationship in the Architecture diagram exists in `printers/inheritance-graph*.dot` and `printers/call-graph*.dot` (or is justified by code reading of delegatecall/interface calls)
+- [ ] Every function listed in Contract Deep Dives matches `printers/function-summary.txt` — visibility, modifiers, and state variables read/written are correct
+- [ ] Every access control claim in the Access Control Matrix matches `printers/vars-and-auth.txt` and `printers/modifiers.txt`
+- [ ] Storage layout in Upgrade & Migration matches `printers/variable-order.txt`
 
 **Flow verification (cross-check against code or Foundry traces):**
 

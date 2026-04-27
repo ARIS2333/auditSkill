@@ -2,35 +2,49 @@
 
 **Purpose:** Dive into the source code using Phase 1 (structural model) as your guide, and produce a comprehensive codebase documentation with Mermaid diagrams. This document becomes the **shared reference for all subsequent phases** — it builds the mental model that drives automated scanning (Phase 3), security code reading (Phase 4), PoC development (Phase 5), and final reporting (Phase 6).
 
-**Gate:** Document covers all 13 sections from the template. The Fact-Checking Checklist in the template passes completely. No unverified claims.
+**Gate:** Document covers all 13 sections from the template. The Fact-Checking Checklist in the template passes completely. No unverified claims. A ranked hypothesis list is produced at the end.
 
-See `templates/codebase-report.md` for the full template, population guide, Mermaid examples, and fact-checking checklist.
+See `templates/codebase-report.md` for the full template, population guide (which printer files to read per section), and fact-checking checklist.
 
 ---
 
 ## Inputs
 
-- **Phase 1 outputs:** `audit-output/phase-1-recon/structural-summary.md`, `audit-output/phase-1-recon/hypothesis-list.md`, raw printer outputs in `audit-output/phase-1-recon/printers/`
+- **Phase 1 outputs:** `audit-output/phase-1-recon/structural-summary.md` (includes printer output index), raw printer outputs in `audit-output/phase-1-recon/printers/`
 - **Source code:** `.sol` files in scope
 
-## Output
+## Outputs
 
-Write to **`audit-output/phase-2-docs/codebase-overview.md`**.
+- **`audit-output/phase-2-docs/codebase-overview.md`** — comprehensive codebase documentation
+- **`audit-output/phase-2-docs/hypothesis-list.md`** — ranked attack hypothesis list
 
 ## Process
 
 1. Open the template from `templates/codebase-report.md`
-2. For each of the 13 sections, populate using the combination of printer data (Phase 1) and code reading indicated in the template's "How to Populate" table
-3. Create Mermaid diagrams for architecture, user flows, access control, value flow, and state machine
-4. Run through the Fact-Checking Checklist at the bottom of the template — every checkbox must pass
+2. For each of the 13 sections, follow the template's "Read These Files Before Writing" column — **read the listed printer files fresh for each section, do not rely on memory**
+3. Run through the Fact-Checking Checklist at the bottom of the template — every checkbox must pass
+4. **Synthesize the attack hypothesis list** (see below)
 
-## Key Principles
+This document is a **living reference** — update it when Phase 4 code reading or Phase 5 PoC development reveals new information.
 
-- This is NOT a reformatting of printer output — you must go through actual source code to fill in context that printers cannot provide (protocol purpose, user flows, fee logic, state transitions, trust assumptions)
-- Use printers as your guide and fact-checking source, not your only input
-- Every Mermaid diagram must have labeled edges
-- If you cannot fill a section confidently, run more printers or read specific contracts before proceeding — do not guess
+---
 
-## Living Document
+## Final Step: Synthesize Attack Hypothesis List
 
-This document is a **living reference** — update it when Phase 4 code reading or Phase 5 PoC development reveals new information. Every update must pass the same fact-checking standard.
+After completing the codebase documentation, you now have both the structural model (Phase 1 printers) and deep protocol understanding (code reading). Synthesize both into a ranked attack target list.
+
+Write to **`audit-output/phase-2-docs/hypothesis-list.md`**.
+
+**Flag immediately:**
+- Functions that modify state with NO modifiers and NO require checks (critical priority)
+- Functions with only `msg.sender` checks (medium priority)
+- State-modifying functions missing `whenNotPaused` (if project uses Pausable)
+
+| Priority | Criteria |
+|----------|----------|
+| **Critical** | State-modifying, no modifiers, no require statements |
+| **High** | Handles ETH/token transfers with access control (verify guard correctness) |
+| **Medium** | Complex functions with many state writes and cross-function calls |
+| **Low** | View functions, well-guarded administrative functions |
+
+This hypothesis list now benefits from both structural data AND your code reading — it should be more accurate than a purely printer-based ranking.

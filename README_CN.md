@@ -50,7 +50,7 @@ uv tool install slither-analyzer
 
 ```bash
 # 克隆仓库
-git clone https://github.com/YOUR_USERNAME/smart-contract-auditor.git
+git clone https://github.com/ARIS2333/smart-contract-auditor.git
 
 # 将技能文件夹复制到 Claude Code 的全局技能目录
 cp -r smart-contract-auditor/smart-contract-auditor ~/.claude/skills/smart-contract-auditor

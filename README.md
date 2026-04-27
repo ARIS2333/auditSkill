@@ -50,7 +50,7 @@ Install once, use in every project you open with Claude Code:
 
 ```bash
 # Clone the repo
-git clone https://github.com/YOUR_USERNAME/smart-contract-auditor.git
+git clone https://github.com/ARIS2333/smart-contract-auditor.git
 
 # Copy the skill folder to Claude Code's global skills directory
 cp -r smart-contract-auditor/smart-contract-auditor ~/.claude/skills/smart-contract-auditor

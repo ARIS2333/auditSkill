@@ -21,6 +21,7 @@ Comprehensive reference for smart contract auditors using Foundry to build, test
 11. [Configuration Reference (foundry.toml)](#11-configuration-reference-foundrytoml)
 12. [PoC Development Workflow](#12-poc-development-workflow)
 13. [PoC Template](#13-poc-template)
+14. [Invariant Testing for Audits](#14-invariant-testing-for-audits)
 
 ---
 
@@ -1161,4 +1162,208 @@ contract ExploitPoC is Test {
 
 ```bash
 forge test --match-test test_Exploit -vvvv
+```
+
+---
+
+## 14. Invariant Testing for Audits
+
+Invariant testing (also called stateful fuzz testing) is one of the most powerful techniques for finding complex, multi-step vulnerabilities that single-function fuzz tests miss. Foundry's invariant tester randomly calls sequences of functions and checks that protocol invariants hold after every call.
+
+### Core Concepts
+
+- **Invariant functions** are prefixed with `invariant_` — they are called after every random function sequence
+- **Handler contracts** wrap target contract calls to constrain inputs to realistic values and manage test state
+- **Ghost variables** track expected state in the test so you can compare against actual contract state
+
+### Basic Invariant Test
+
+```solidity
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.0;
+
+import "forge-std/Test.sol";
+import "../src/Vault.sol";
+
+contract VaultInvariantTest is Test {
+    Vault public vault;
+    IERC20 public token;
+
+    function setUp() public {
+        token = new MockERC20();
+        vault = new Vault(address(token));
+
+        // Target only the vault for random calls
+        targetContract(address(vault));
+    }
+
+    // This is checked after EVERY random call sequence
+    invariant_totalAssetsMatchesBalance() public view {
+        assertGe(
+            token.balanceOf(address(vault)),
+            vault.totalAssets(),
+            "Vault claims more assets than it holds"
+        );
+    }
+
+    invariant_sharePriceNeverZero() public view {
+        if (vault.totalSupply() > 0) {
+            assertGt(
+                vault.convertToAssets(1e18),
+                0,
+                "Share price collapsed to zero"
+            );
+        }
+    }
+}
+```
+
+### Handler Pattern (Recommended for Real Audits)
+
+Without a handler, the fuzzer calls random functions with random arguments — most calls revert on invalid inputs and the test explores very little state space. A handler constrains inputs and tracks state.
+
+```solidity
+contract VaultHandler is Test {
+    Vault public vault;
+    IERC20 public token;
+
+    // Ghost variables — track expected state
+    uint256 public ghost_totalDeposited;
+    uint256 public ghost_totalWithdrawn;
+    address[] public actors;
+
+    constructor(Vault _vault, IERC20 _token) {
+        vault = _vault;
+        token = _token;
+
+        // Create a set of actors
+        for (uint256 i = 0; i < 5; i++) {
+            actors.push(makeAddr(string(abi.encodePacked("actor", i))));
+        }
+    }
+
+    // Modifiers to bound inputs and select actors
+    modifier useActor(uint256 actorSeed) {
+        address actor = actors[bound(actorSeed, 0, actors.length - 1)];
+        vm.startPrank(actor);
+        _;
+        vm.stopPrank();
+    }
+
+    function deposit(uint256 amount, uint256 actorSeed) external useActor(actorSeed) {
+        amount = bound(amount, 1, 100_000e18);
+
+        address actor = actors[bound(actorSeed, 0, actors.length - 1)];
+        deal(address(token), actor, amount);
+        token.approve(address(vault), amount);
+        vault.deposit(amount, actor);
+
+        ghost_totalDeposited += amount;
+    }
+
+    function withdraw(uint256 amount, uint256 actorSeed) external useActor(actorSeed) {
+        address actor = actors[bound(actorSeed, 0, actors.length - 1)];
+        uint256 maxWithdraw = vault.maxWithdraw(actor);
+        amount = bound(amount, 0, maxWithdraw);
+        if (amount == 0) return;
+
+        vault.withdraw(amount, actor, actor);
+
+        ghost_totalWithdrawn += amount;
+    }
+}
+
+contract VaultInvariantTest is Test {
+    Vault public vault;
+    MockERC20 public token;
+    VaultHandler public handler;
+
+    function setUp() public {
+        token = new MockERC20();
+        vault = new Vault(address(token));
+        handler = new VaultHandler(vault, token);
+
+        // Target ONLY the handler — not the vault directly
+        targetContract(address(handler));
+    }
+
+    invariant_solvency() public view {
+        assertGe(
+            token.balanceOf(address(vault)),
+            vault.totalAssets(),
+            "Vault is insolvent"
+        );
+    }
+
+    invariant_depositWithdrawAccounting() public view {
+        assertGe(
+            handler.ghost_totalDeposited(),
+            handler.ghost_totalWithdrawn(),
+            "More withdrawn than deposited"
+        );
+    }
+
+    // Called after the invariant test completes — useful for final assertions
+    function afterInvariant() public view {
+        // Log final state for analysis
+        console.log("Total calls executed");
+        console.log("Final vault balance:", token.balanceOf(address(vault)));
+    }
+}
+```
+
+### Configuration Functions
+
+Call these in `setUp()` to control what gets fuzzed:
+
+| Function | Description |
+|----------|-------------|
+| `targetContract(address)` | Add contract to the set of targets (fuzzer only calls targets) |
+| `excludeContract(address)` | Remove contract from target set |
+| `targetSelector(FuzzSelector)` | Restrict which functions can be called on a target |
+| `excludeSender(address)` | Prevent an address from being used as `msg.sender` |
+| `targetArtifact(string)` | Target a contract by artifact name |
+| `targetArtifactSelector(FuzzArtifactSelector)` | Target specific functions in an artifact |
+
+```solidity
+// Only fuzz specific functions
+bytes4[] memory selectors = new bytes4[](2);
+selectors[0] = VaultHandler.deposit.selector;
+selectors[1] = VaultHandler.withdraw.selector;
+targetSelector(FuzzSelector({addr: address(handler), selectors: selectors}));
+```
+
+### foundry.toml Configuration
+
+```toml
+[invariant]
+runs = 256              # Number of call sequences to execute
+depth = 128             # Number of calls per sequence
+fail_on_revert = false  # Don't fail if a call reverts (expected with random inputs)
+call_override = false   # Don't override msg.sender for calls
+dictionary_weight = 80  # Weight for using values from storage vs random (0-100)
+shrink_run_limit = 5000 # Max attempts to shrink failing sequence
+```
+
+### Common Invariants for DeFi Audits
+
+| Protocol Type | Invariant | What It Catches |
+|---------------|-----------|-----------------|
+| **Vault/ERC4626** | `totalAssets >= sum(user shares × share price)` | Inflation attacks, accounting bugs |
+| **Vault/ERC4626** | `share price is monotonically non-decreasing (outside loss events)` | Rounding exploits, donation attacks |
+| **Lending** | `total borrows <= total deposits` | Over-borrowing bugs |
+| **Lending** | `user health factor >= 1 OR position is liquidatable` | Liquidation threshold bugs |
+| **AMM/DEX** | `x * y >= k (constant product)` | Price manipulation, rounding errors |
+| **AMM/DEX** | `sum(LP token supply) corresponds to reserves` | LP accounting bugs |
+| **Staking** | `total staked == sum(individual stakes)` | Reward distribution errors |
+| **Governance** | `total voting power == sum(individual voting power)` | Vote manipulation |
+
+### Run Invariant Tests
+
+```bash
+# Run all invariant tests
+forge test --match-test invariant_ -vvv
+
+# Run with more depth (longer sequences)
+forge test --match-test invariant_ -vvv --fuzz-runs 1000
 ```

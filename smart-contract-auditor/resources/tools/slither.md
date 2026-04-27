@@ -22,6 +22,8 @@ Comprehensive reference for smart contract auditors using Slither for static vul
 12. [Custom Detector Development](#12-custom-detector-development)
 13. [Audit Workflow](#13-audit-workflow)
 14. [Audit Report Template](#14-audit-report-template)
+15. [Detector-to-PoC Mapping](#15-detector-to-poc-mapping)
+16. [Known Limitations](#16-known-limitations)
 
 ---
 
@@ -1184,7 +1186,7 @@ slither . --foundry-out-directory out --triage-mode
 
 ### Phase 5: PoC Development
 
-For each confirmed High/Medium finding, write a Foundry PoC (see [foundry-audit-guide.md](./foundry-audit-guide.md)).
+For each confirmed High/Medium finding, write a Foundry PoC (see [foundry.md](./foundry.md)).
 
 ### Phase 6: Report Generation
 
@@ -1269,3 +1271,56 @@ forge test --match-test test_H01_Exploit -vvvv
 ## 4. Scope Limitations
 [What was not tested, assumptions, dependencies on external state]
 ```
+
+---
+
+## 15. Detector-to-PoC Mapping
+
+When writing a PoC for a specific detector finding, use these strategies:
+
+| Detector | PoC Strategy |
+|----------|-------------|
+| `reentrancy-eth` | Deploy a malicious contract with a `receive()` that re-enters the target. Use `vm.deal` to fund the attacker, call the vulnerable function, assert drained funds. |
+| `arbitrary-send-eth` / `arbitrary-send-erc20` | Use `vm.prank` as an unauthorized address, call the function that sends funds, prove funds arrived at attacker's address. |
+| `unprotected-upgrade` | Use `vm.prank` as a non-admin, call `initialize()` or `upgradeToAndCall()`, prove ownership was taken. |
+| `suicidal` | Use `vm.prank` as an unauthorized address, call the function containing `selfdestruct`, prove the contract was destroyed. |
+| `controlled-delegatecall` | Deploy a malicious implementation, call the vulnerable function with the malicious address, prove storage was overwritten. |
+| `unchecked-transfer` | Set up a token that returns `false` on `transfer`, call the vulnerable function, prove it succeeds when it should have failed. Use `vm.mockCall` to simulate. |
+| `uninitialized-state` / `uninitialized-storage` | Prove the uninitialized variable contains unexpected data that breaks a critical operation. |
+| `locked-ether` | Send ETH to the contract, prove there is no way to withdraw it. |
+| `divide-before-multiply` | Provide inputs where the precision loss is significant, prove the output is incorrect by comparing with the correct calculation. |
+| `incorrect-equality` | Manipulate state to make the strict equality check pass/fail unexpectedly (e.g., send dust amounts). |
+| `tx-origin` | Create a scenario with a forwarding contract where `msg.sender != tx.origin` to bypass or exploit the check. |
+
+---
+
+## 16. Known Limitations
+
+Understanding what Slither **cannot** do is as important as knowing what it can. These blind spots define where manual code review and Foundry invariant testing must fill the gap.
+
+### Detection Blind Spots
+
+| Limitation | Why | Workaround |
+|-----------|-----|------------|
+| **Cross-contract reentrancy** | Slither analyzes contracts individually; it doesn't track state flow through external call chains across multiple contracts | Manual code reading of cross-contract call sequences + Foundry PoC |
+| **Read-only reentrancy** | Reentrancy detectors focus on state-writing calls; `view`/`pure` function calls during reentrancy are invisible | Manual review of any protocol that reads external state (LP pricing, oracle views) |
+| **Logic bugs** | Slither matches AST patterns — it cannot reason about business logic, economic incentives, or intended vs actual behavior | Adversarial thinking (Phase 4.4), invariant testing |
+| **Multi-transaction attack sequences** | Slither analyzes single-function execution paths; attacks requiring a specific sequence of transactions across blocks are invisible | Manual attack path construction + Foundry multi-step PoCs |
+| **Inline assembly semantics** | Slither can detect `assembly` usage but doesn't deeply analyze the Yul/EVM opcodes within assembly blocks | Manual review of every `assembly` block for correctness |
+| **`delegatecall` side effects** | `function-summary` printer reports variables read/written in the context of the calling contract, but `delegatecall` executes in the caller's storage context — the actual storage writes may differ | Cross-reference `variable-order` of both proxy and implementation; manually verify storage alignment |
+| **Token callback reentrancy** | ERC777 `tokensReceived`, ERC721 `onERC721Received`, ERC1155 `onERC1155Received` hooks create reentrant calls inside token transfer, invisible to Slither | Check `resources/non-standard-tokens.md` §8 for token callback patterns |
+| **Economic / game-theoretic exploits** | Flash loan sandwich attacks, MEV extraction, funding rate manipulation — Slither cannot model economic incentives | Manual analysis using domain-specific playbooks |
+| **Transient storage (EIP-1153)** | `TSTORE`/`TLOAD` are recent opcodes; Slither support may be incomplete | Manual review of all transient storage usage |
+
+### Confidence Calibration
+
+- **High confidence + High impact** detector finding: Still verify — "High confidence" means the AST pattern is clear, not that exploitation is confirmed. The pattern may be intentional (e.g., documented reentrancy guard elsewhere).
+- **Medium confidence** findings: ~30-50% are false positives in typical codebases. Always verify reachability via `call-graph` and access control via `vars-and-auth`.
+- **`function-summary` accuracy**: This printer is derived from the AST and is ground truth for what the compiler sees. However, it does not account for: (a) `delegatecall` executing different code, (b) inline assembly performing raw `SSTORE`/`SLOAD`, (c) self-destructing contracts.
+
+### What Slither Does Well (Lean Into These)
+
+- **Structural analysis** — inheritance graphs, storage layouts, function summaries are authoritative
+- **Known vulnerability patterns** — reentrancy, unchecked return values, uninitialized state, access control gaps
+- **Compliance checking** — ERC20/721 conformance, upgradeability safety
+- **Code quality** — naming conventions, dead code, unused variables, optimization opportunities

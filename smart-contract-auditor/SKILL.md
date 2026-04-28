@@ -88,7 +88,7 @@ At the start of Phase 0, create this folder structure. All intermediate outputs,
 ```
 audit-output/
 ├── phase-1-recon/
-│   ├── printers/                  # One file per printer (13 total)
+│   ├── printers/                  # One file per printer (12 total)
 │   │   ├── human-summary.txt
 │   │   ├── function-summary.txt
 │   │   ├── entry-points.txt
@@ -100,7 +100,6 @@ audit-output/
 │   │   ├── require.txt
 │   │   ├── not-pausable.txt
 │   │   ├── call-graph*.dot
-│   │   ├── data-dependency.txt
 │   │   ├── function-id.txt
 │   │   └── per-contract/              # (Large codebases >15 contracts) Split printer output by contract
 │   ├── structural-summary.md      # Contract count, SLOC, ERCs, inheritance tree, storage layout, printer output guide
@@ -142,7 +141,7 @@ audit-output/
 When working with large codebases, the raw printer outputs and source files can exceed what fits in a single context window. Follow these principles:
 
 1. **Each phase builds a progressively richer summary.** Phase 1 extracts key structural data from raw printers into the structural summary (compact tables). Phase 2 synthesizes printer data + code reading into the codebase overview. Phases 3-6 should primarily use the Phase 2 codebase overview as their reference — not the raw Phase 1 printer files. Only go back to raw printer files for specific spot-checks.
-2. **Phase 2 uses the structural summary as its primary structural input** — not raw printer files. The structural summary already contains the inheritance tree, function-modifier-state-write table, unguarded functions, and storage layout. Only fall back to raw printer files (via the printer output index) when you need detail the structural summary does not cover (e.g., full data-dependency chains, DOT graph traversal, per-function require conditions).
+2. **Phase 2 uses the structural summary as its primary structural input** — not raw printer files. The structural summary already contains the inheritance tree, function-modifier-state-write table, unguarded functions, and storage layout. Only fall back to raw printer files (via the printer output index) when you need detail the structural summary does not cover (e.g., DOT graph traversal, per-function require conditions).
 3. **Per-contract printer files for large codebases.** If the project has more than 15 contracts, split large printer outputs (especially `function-summary.txt`) into per-contract files inside `audit-output/phase-1-recon/printers/per-contract/`. This allows later phases to read only the contracts they need.
 4. **Work incrementally.** When context is constrained, process one contract or one section at a time. Write intermediate results to disk before moving to the next. Do not attempt to hold the entire codebase model in a single pass.
 5. **Re-read, don't recall.** When a later phase needs data from an earlier phase, open and read the file — do not rely on memory of what it contained. This is both an anti-hallucination measure and a context management strategy.
@@ -165,7 +164,7 @@ Set up the audit output directory, detect project type, verify compilation and S
 **File:** `resources/phases/phase-1-recon.md`
 **Gate:** You can answer every structural question without reading code, the structural summary includes a printer output guide, all printer outputs are validated as non-empty and error-free, AND a preliminary hypothesis list is produced.
 
-Run 13 Slither printers, each saved to its own file. Validate that all printer outputs are usable (non-empty, no buried errors). Write a structural summary that extracts the most critical data into compact tables (inheritance tree, function-to-modifier-to-state-write reference, unguarded functions, storage layout) so later phases can look up structural facts without re-reading large raw files. Produce a preliminary hypothesis list based on structural signals (unguarded functions, ETH/token handlers, cross-contract calls). If test files exist, run `forge coverage` and save the output — coverage gaps inform the hypothesis list. Do NOT read `.sol` files during this phase. The `function-summary` printer is the single most important anti-hallucination artifact.
+Run 12 Slither printers, each saved to its own file. Validate that all printer outputs are usable (non-empty, no buried errors). Write a structural summary that extracts the most critical data into compact tables (inheritance tree, function-to-modifier-to-state-write reference, unguarded functions, storage layout) so later phases can look up structural facts without re-reading large raw files. Produce a preliminary hypothesis list based on structural signals (unguarded functions, ETH/token handlers, cross-contract calls). If test files exist, run `forge coverage` and save the output — coverage gaps inform the hypothesis list. Do NOT read `.sol` files during this phase. The `function-summary` printer is the single most important anti-hallucination artifact.
 
 **Checkpoint:** Present the structural summary and preliminary hypothesis list to the user. Pause and wait for confirmation before proceeding to Phase 2. Default behavior is to pause.
 

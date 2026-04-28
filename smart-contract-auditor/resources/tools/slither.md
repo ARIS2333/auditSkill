@@ -306,7 +306,6 @@ Slither includes **27** printers that extract structural information from contra
 | `ck` | `--print ck` | Chidamber and Kemerer (CK) complexity metrics |
 | `constructor-calls` | `--print constructor-calls` | Print constructors executed during deployment |
 | `contract-summary` | `--print contract-summary` | Summary of all contracts |
-| `data-dependency` | `--print data-dependency` | Variable data dependency analysis |
 | `declaration` | `--print declaration` | Source code declaration, implementation, and references |
 | `dominator` | `--print dominator` | Export dominator tree per function |
 | `echidna` | `--print echidna` | Export Echidna fuzzer guidance info |
@@ -364,9 +363,6 @@ slither . --print function-id
 ```bash
 # Storage variable ordering (slot layout)
 slither . --print variable-order
-
-# Data dependency tracking
-slither . --print data-dependency
 ```
 
 #### Access Control Review

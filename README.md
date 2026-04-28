@@ -13,7 +13,7 @@ AI agents hallucinate when auditing smart contracts — they misread inheritance
 | Phase | Name | What Happens |
 |-------|------|-------------|
 | 0 | Environment Setup | Detect project type, verify compilation, identify audit scenarios (DeFi, proxy, token, cross-chain, staking, transient storage), select submission platform |
-| 1 | Structural Reconnaissance | Run 13 Slither printers to map inheritance, entry points, function-to-state-variable relationships, storage layout, access control, and data flow. **No code reading.** |
+| 1 | Structural Reconnaissance | Run 12 Slither printers to map inheritance, entry points, function-to-state-variable relationships, storage layout, and access control. **No code reading.** |
 | 2 | Codebase Documentation | Dive into source code guided by Phase 1 outputs. Produce a comprehensive Mermaid-based codebase document (13 sections) and a ranked attack hypothesis list. |
 | 3 | Automated Scanning | Run Slither detectors (full scan, high-impact focused, scenario-specific). Contextualize every finding against Phase 2 documentation. |
 | 4 | Targeted Code Reading & Triage | Deep security-focused code reading with a 24-item checklist. Activate domain-specific playbooks. Classify findings as Confirmed / Potential / False Positive. |
@@ -165,7 +165,7 @@ smart-contract-auditor/
     │   └── domain-playbooks.md           # Domain-specific attack checklists (10 protocol types)
     └── phases/
         ├── phase-0-setup.md              # Environment setup & scope discovery
-        ├── phase-1-recon.md              # Structural reconnaissance (13 printers)
+        ├── phase-1-recon.md              # Structural reconnaissance (12 printers)
         ├── phase-2-docs.md               # Codebase documentation & hypothesis list
         ├── phase-3-scanning.md           # Automated Slither detector scans
         ├── phase-4-analysis.md           # Targeted code reading & triage (24-item checklist)
@@ -201,7 +201,7 @@ Three-tier fallback when Slither fails to compile: fix & retry, partial analysis
 
 ## Slither Printers Used
 
-These 13 printers are run in Phase 1 to build the structural model before any code reading:
+These 12 printers are run in Phase 1 to build the structural model before any code reading:
 
 | Printer | Purpose |
 |---------|---------|
@@ -216,7 +216,6 @@ These 13 printers are run in Phase 1 to build the structural model before any co
 | `require` | All `require` and `assert` conditions per function |
 | `not-pausable` | Functions missing `whenNotPaused` guard |
 | `call-graph` | Cross-function call relationships (DOT) |
-| `data-dependency` | How user input flows through to state variables |
 | `function-id` | Keccak256 function selectors (check for collisions in proxy patterns) |
 
 ## Contributing

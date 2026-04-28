@@ -100,7 +100,6 @@ All raw printer files are in `audit-output/phase-1-recon/printers/`. Use this in
 | `require.txt` | All `require` and `assert` conditions per function |
 | `not-pausable.txt` | Functions missing `whenNotPaused` guard |
 | `call-graph*.dot` | DOT visualization of inter-function call relationships |
-| `data-dependency.txt` | How user input flows through to state variables |
 | `function-id.txt` | Keccak256 function selectors (check for collisions in proxy patterns) |
 
 ## 7. Notes

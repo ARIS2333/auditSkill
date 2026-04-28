@@ -16,7 +16,6 @@ Your primary structural reference is **`audit-output/phase-1-recon/structural-su
 
 **Only fall back to raw printer files** (in `audit-output/phase-1-recon/printers/`) when the structural summary does not contain the detail you need. The structural summary's Printer Output Index (§6) tells you which raw file to consult. Common reasons to access raw printers:
 - DOT graph files (`inheritance-graph*.dot`, `call-graph*.dot`) for visual traversal of call paths or inheritance
-- `data-dependency.txt` for full input-to-state-variable dependency chains
 - `require.txt` for per-function require/assert conditions
 - `not-pausable.txt` for the full list of functions missing `whenNotPaused`
 - Per-contract printer splits for large codebases (>15 contracts)
@@ -32,7 +31,7 @@ Your primary structural reference is **`audit-output/phase-1-recon/structural-su
 | Access Control Matrix | §3, §4 Unguarded Functions | `vars-and-auth.txt`, `modifiers.txt` | Yes — verify guard logic |
 | Value Flow | §3 (filter: payable, transfer, mint, burn) | `function-summary.txt` | Yes — trace token/ETH movement |
 | State Machine | — | `not-pausable.txt` | Yes — identify state transitions |
-| External Dependencies | — | `call-graph*.dot`, `data-dependency.txt` | Yes — identify failure modes |
+| External Dependencies | — | `call-graph*.dot` | Yes — identify failure modes |
 | Upgrade & Migration | §5 Storage Layout | `variable-order.txt` | Yes — verify storage layout |
 | Key Invariants | Synthesized from hypothesis list + code reading | — | Yes — identify protocol rules |
 | Known Risks & Trust Assumptions | Code reading (updated with Phase 3 detector findings) | — | Yes — assess trust boundaries |

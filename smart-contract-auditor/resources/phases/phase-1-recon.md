@@ -8,7 +8,7 @@
 
 ## Step 1: Run All Printers (Each to Its Own File)
 
-Run 13 printers, saving each output to a separate file in `audit-output/phase-1-recon/printers/`. Always write the full `slither` command directly — never store commands in shell variables.
+Run 12 printers, saving each output to a separate file in `audit-output/phase-1-recon/printers/`. Always write the full `slither` command directly — never store commands in shell variables.
 
 **Text printers** — run individually, redirect stdout to file:
 
@@ -22,7 +22,7 @@ slither . --print human-summary \
 
 # Remaining text printers skip recompilation
 for printer in function-summary entry-points vars-and-auth inheritance \
-  variable-order modifiers require not-pausable data-dependency function-id; do
+  variable-order modifiers require not-pausable function-id; do
   slither . --print "$printer" \
     --foundry-out-directory out \
     --exclude-dependencies \
@@ -50,7 +50,7 @@ mv *.dot audit-output/phase-1-recon/printers/ 2>/dev/null
 
 ## Step 2: Validate Printer Outputs
 
-After all 13 printers have run, verify that each output file is usable. Non-empty output and absence of error prefixes are required before proceeding.
+After all 12 printers have run, verify that each output file is usable. Non-empty output and absence of error prefixes are required before proceeding.
 
 ```bash
 for f in audit-output/phase-1-recon/printers/*.txt; do
@@ -126,7 +126,6 @@ Scan the printer output for these structural signals:
 | Functions handling token transfers (`transferFrom`, `safeTransferFrom`, `mint`, `burn`) | `function-summary.txt` | High |
 | Complex cross-contract calls (multiple external calls in one function) | `call-graph*.dot`, `entry-points.txt` | High |
 | State-modifying functions missing `whenNotPaused` (if Pausable is used) | `not-pausable.txt` | Medium |
-| Functions with high data dependency from user input | `data-dependency.txt` | Medium |
 | Zero or low test coverage (if coverage was run in Step 3) | `coverage-report.txt` | Medium |
 
 Format:

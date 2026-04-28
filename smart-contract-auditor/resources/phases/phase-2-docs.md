@@ -13,7 +13,7 @@ See `templates/codebase-report.md` for the full template, population guide (whic
 - **Phase 1 output:** `audit-output/phase-1-recon/structural-summary.md` — your primary structural reference (compact tables for inheritance, function-modifier-state-write mappings, unguarded functions, storage layout, plus a printer output index for raw lookups)
 - **Phase 1 output:** `audit-output/phase-1-recon/preliminary-hypotheses.md` (structural-only hypothesis list to refine)
 - **Phase 1 output:** `audit-output/phase-1-recon/coverage-report.txt` (if tests exist)
-- **Phase 1 raw printers:** `audit-output/phase-1-recon/printers/` — only consult these when the structural summary does not contain the detail you need (e.g., full data-dependency chains, DOT graph traversal, per-function require conditions)
+- **Phase 1 raw printers:** `audit-output/phase-1-recon/printers/` — only consult these when the structural summary does not contain the detail you need (e.g., DOT graph traversal, per-function require conditions)
 - **Source code:** `.sol` files in scope
 
 ## Outputs
@@ -30,7 +30,7 @@ See `templates/codebase-report.md` for the full template, population guide (whic
 
 This document is a **living reference** — update it when Phase 4 code reading or Phase 5 PoC development reveals new information.
 
-**Context management:** The structural summary is your primary structural reference — it already contains the inheritance tree, function-modifier-state-write table, unguarded functions list, and storage layout. For each section of the codebase overview, start from the structural summary + code reading. Only fall back to raw printer files (via the printer output index in the structural summary §6) when you need detail the structural summary does not cover — e.g., full `data-dependency.txt` chains, DOT graph traversal for call paths, or per-function `require.txt` conditions. After writing each section, subsequent sections can reference what you already wrote. This "structural summary → code reading → raw printer only if needed → write section → move on" cycle keeps context manageable.
+**Context management:** The structural summary is your primary structural reference — it already contains the inheritance tree, function-modifier-state-write table, unguarded functions list, and storage layout. For each section of the codebase overview, start from the structural summary + code reading. Only fall back to raw printer files (via the printer output index in the structural summary §6) when you need detail the structural summary does not cover — e.g., DOT graph traversal for call paths, or per-function `require.txt` conditions. After writing each section, subsequent sections can reference what you already wrote. This "structural summary → code reading → raw printer only if needed → write section → move on" cycle keeps context manageable.
 
 ---
 

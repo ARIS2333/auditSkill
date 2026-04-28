@@ -17,13 +17,13 @@ Use this template for `audit-output/phase-1-recon/structural-summary.md`. This i
 | Source lines of code (SLOC) | [N] |
 | External/public functions | [N] |
 | ERCs detected | [e.g., ERC20, ERC721, None] |
-| Scope classification | [Small / Medium / Large — from Phase 0.5] |
+| Scope classification | [Small / Medium / Large — from Phase 0 Step 6] |
 
 **Source:** `printers/human-summary.txt`
 
 ## 2. Inheritance Tree
 
-Extract the full inheritance hierarchy as a compact text tree. This lets any phase quickly check "what does Contract X inherit?" without opening DOT files.
+Extract the full inheritance hierarchy as a compact text tree.
 
 ```
 ContractA
@@ -40,9 +40,7 @@ ContractB
 
 ## 3. Entry Points & Access Control — Compact Function Reference
 
-This is the most critical table in the structural summary. It is the primary lookup for "what does function X do, who can call it, and what state does it touch?" — the question asked most often in every subsequent phase.
-
-Extract from `function-summary.txt`, `modifiers.txt`, and `vars-and-auth.txt`:
+The most critical table. Primary lookup for "what does function X do, who can call it, and what state does it touch?"
 
 | Contract | Function | Vis | Modifiers | State Vars Written | Auth Check |
 |----------|----------|-----|-----------|-------------------|------------|
@@ -52,45 +50,44 @@ Extract from `function-summary.txt`, `modifiers.txt`, and `vars-and-auth.txt`:
 
 **Rules:**
 - Include ALL external and public state-modifying functions
-- For `Modifiers`: list the actual modifier names. If none, write `NONE`
-- For `Auth Check`: summarize the access control — modifier name, or inline require pattern, or `NONE (open)` if unguarded
-- For view/pure functions: omit unless they are called by state-modifying functions via internal calls (note them separately if relevant)
+- For `Modifiers`: list actual modifier names. If none, write `NONE`
+- For `Auth Check`: summarize access control — modifier name, inline require pattern, or `NONE (open)` if unguarded
+- Omit view/pure functions unless called by state-modifying functions via internal calls
 
 **Source:** `printers/function-summary.txt` + `printers/modifiers.txt` + `printers/vars-and-auth.txt`
 
 ## 4. Unguarded State-Modifying Functions
 
-Functions that modify state but have NO modifiers AND NO require/assert checks. These are the highest-priority audit targets. Extract by cross-referencing `function-summary.txt`, `modifiers.txt`, and `require.txt`.
+Functions that modify state but have NO modifiers AND NO require/assert checks. Highest-priority audit targets.
 
 | Contract | Function | State Vars Written | Notes |
 |----------|----------|--------------------|-------|
 | [Contract] | [function()] | [var1, var2] | [e.g., "has inline msg.sender check" or "completely open"] |
 
-If this table is empty, state so explicitly — that itself is useful information.
+If this table is empty, state so explicitly.
 
 **Source:** `printers/function-summary.txt` + `printers/modifiers.txt` + `printers/require.txt`
 
 ## 5. Storage Layout Overview
 
-Per-contract storage slot layout. Critical for proxy/upgradeable patterns and storage collision analysis. For non-upgradeable projects, include only if the project has complex storage (mappings of structs, packed variables, assembly SSTORE).
+Per-contract storage slot layout. Critical for proxy/upgradeable patterns and storage collision analysis.
 
 | Contract | Slot | Variable | Type |
 |----------|------|----------|------|
 | [Vault] | [0] | [owner] | [address] |
 | [Vault] | [1] | [totalAssets] | [uint256] |
-| [Vault] | [2] | [strategy] | [address] |
 | [Vault] | [3-49] | [__gap] | [uint256[47]] |
 
 **Source:** `printers/variable-order.txt`
 
 ## 6. Printer Output Index
 
-All raw printer files are in `audit-output/phase-1-recon/printers/`. Use this index when you need detail beyond what the compact tables above provide.
+All raw printer files are in `audit-output/phase-1-recon/printers/`. Use this index when you need detail beyond the tables above.
 
 | File | What to Find Here |
 |------|-------------------|
 | `human-summary.txt` | Contract count, SLOC, ERCs, complexity overview |
-| `function-summary.txt` | **Anti-hallucination ground truth.** Per-function: visibility, modifiers, state vars read/written — full detail beyond §3 above |
+| `function-summary.txt` | **Anti-hallucination ground truth.** Per-function: visibility, modifiers, state vars read/written |
 | `entry-points.txt` | All state-changing external/public functions and their accessed variables |
 | `vars-and-auth.txt` | Which state variables each function modifies + authorization checks |
 | `inheritance.txt` | Text-based inheritance relationships between contracts |
@@ -104,5 +101,5 @@ All raw printer files are in `audit-output/phase-1-recon/printers/`. Use this in
 
 ## 7. Notes
 
-[Record anything unusual observed during printer execution: errors, warnings, contracts that failed to analyze, printers that produced empty output, validation failures from Step 2, coverage report highlights, etc.]
+[Record anything unusual: errors, warnings, contracts that failed to analyze, printers that produced empty output, validation failures, coverage report highlights.]
 ```

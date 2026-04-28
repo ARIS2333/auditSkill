@@ -2,11 +2,21 @@
 
 **Purpose:** Build a complete, tool-verified structural model of the codebase using Slither printers. Do NOT read any `.sol` files during this phase.
 
-**Gate:** You can answer every structural question (contract count, inheritance hierarchy, function visibility, storage layout, access control modifiers, entry points) without reading code, the structural summary includes a printer output guide, all printer outputs are validated as non-empty and error-free, AND a preliminary hypothesis list is produced.
+**Gate:** You can answer every structural question (contract count, inheritance hierarchy, function visibility, storage layout, access control modifiers, entry points) without reading code. Structural summary includes a printer output guide. All printer outputs validated as non-empty and error-free. Preliminary hypothesis list produced.
+
+**Inputs:** Compiled codebase, Slither base flags from Phase 0.
+
+**Outputs:**
+- `audit-output/phase-1-recon/printers/` — one file per printer (12 total)
+- `audit-output/phase-1-recon/structural-summary.md`
+- `audit-output/phase-1-recon/preliminary-hypotheses.md`
+- `audit-output/phase-1-recon/coverage-report.txt` (if tests exist)
+
+**Checkpoint:** Present the structural summary and preliminary hypothesis list to the user. Pause and wait for confirmation before proceeding to Phase 2.
 
 ---
 
-## Step 1: Run All Printers (Each to Its Own File)
+## Step 1: Run All Printers
 
 Run 12 printers, saving each output to a separate file in `audit-output/phase-1-recon/printers/`. Always write the full `slither` command directly — never store commands in shell variables.
 
@@ -50,24 +60,21 @@ mv *.dot audit-output/phase-1-recon/printers/ 2>/dev/null
 
 ## Step 2: Validate Printer Outputs
 
-After all 12 printers have run, verify that each output file is usable. Non-empty output and absence of error prefixes are required before proceeding.
+Verify that each output file is usable. Non-empty output and absence of error prefixes are required before proceeding.
 
 ```bash
 for f in audit-output/phase-1-recon/printers/*.txt; do
   filename=$(basename "$f")
 
-  # Check non-empty
   if [ ! -s "$f" ]; then
     echo "FAIL: $filename is empty"
     continue
   fi
 
-  # Check for error indicators at start of file
   head -5 "$f" | grep -qi "error\|traceback\|exception\|not found" && \
     echo "WARNING: $filename may contain an error — review manually"
 done
 
-# Verify DOT files exist
 ls audit-output/phase-1-recon/printers/*.dot >/dev/null 2>&1 || echo "FAIL: No DOT files found"
 ```
 
@@ -76,45 +83,45 @@ ls audit-output/phase-1-recon/printers/*.dot >/dev/null 2>&1 || echo "FAIL: No D
 - **`vars-and-auth.txt`** — if empty, access control analysis in Phase 2 will be unreliable.
 - **DOT files** (`*.dot`) — verify at least one inheritance graph and one call graph file exist.
 
-If any critical printer output is missing or broken, return to Phase 0.3 to diagnose the Slither issue. Document any printers that could not produce output in the structural summary notes.
+If any critical printer output is missing or broken, return to Phase 0 Step 4 to diagnose. Document any printers that could not produce output in the structural summary notes.
 
 ---
 
 ## Step 3: Run Test Coverage (If Tests Exist)
 
-If the project has test files (`test/` directory is non-empty), run `forge coverage` to identify which code paths the existing test suite exercises:
+If the project has test files (`test/` directory is non-empty):
 
 ```bash
 forge coverage > audit-output/phase-1-recon/coverage-report.txt 2>&1
 ```
 
-If `forge coverage` fails (e.g., tests require RPC forking or have unmet dependencies), note the failure and move on — this is informational, not blocking.
+If `forge coverage` fails (e.g., tests require RPC forking), note the failure and move on — this is informational, not blocking.
 
-**Use the coverage output to inform the hypothesis list:** functions with zero or low coverage in critical contracts are higher-priority targets. If coverage shows that certain user flows are completely untested, note those in the preliminary hypothesis list.
+Use coverage output to inform the hypothesis list: functions with zero or low coverage in critical contracts are higher-priority targets.
 
 ---
 
 ## Step 4: Write Structural Summary
 
-Write **`audit-output/phase-1-recon/structural-summary.md`** using the template in `templates/structural-summary.md`.
+Write **`audit-output/phase-1-recon/structural-summary.md`** using the template in `resources/templates/structural-summary.md`.
 
-This is NOT just an index — it extracts the most critical structural data into compact tables so that later phases can look up facts here without re-reading large raw printer files. The template has 7 sections:
+This is NOT just an index — extract the most critical structural data into compact tables so later phases can look up facts here without re-reading large raw printer files. The template has 7 sections:
 
 1. **Codebase Snapshot** — metrics from `human-summary.txt`
 2. **Inheritance Tree** — compact text hierarchy from `inheritance.txt`
-3. **Entry Points & Access Control** — the most important table: every external/public state-modifying function with its modifiers, state writes, and auth checks. Extracted from `function-summary.txt` + `modifiers.txt` + `vars-and-auth.txt`.
+3. **Entry Points & Access Control** — every external/public state-modifying function with modifiers, state writes, and auth checks. Extracted from `function-summary.txt` + `modifiers.txt` + `vars-and-auth.txt`.
 4. **Unguarded State-Modifying Functions** — cross-referenced from `function-summary.txt` + `modifiers.txt` + `require.txt`. Pre-identified for the hypothesis list.
 5. **Storage Layout Overview** — per-contract slot layout from `variable-order.txt`
 6. **Printer Output Index** — pointers to raw files for detail lookups
 7. **Notes** — validation failures, warnings, coverage highlights
 
-For each section, read the listed printer file(s), extract the data into the structured format, then move on. Do NOT copy raw printer output verbatim — summarize into the tables. The goal: anyone reading this file should understand the codebase structure without opening any raw printer file.
+For each section: read the listed printer file(s), extract the data into the structured format, then move on. Do NOT copy raw printer output verbatim — summarize into the tables.
 
 ---
 
 ## Step 5: Produce Preliminary Hypothesis List
 
-Using ONLY the printer output (no `.sol` file reading), produce a preliminary hypothesis list. Write to **`audit-output/phase-1-recon/preliminary-hypotheses.md`**.
+Using ONLY printer output (no `.sol` file reading), produce a preliminary hypothesis list. Write to **`audit-output/phase-1-recon/preliminary-hypotheses.md`**.
 
 Scan the printer output for these structural signals:
 

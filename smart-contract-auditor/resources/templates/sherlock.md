@@ -166,7 +166,7 @@ The output confirms:
 **Sherlock-specific rules:**
 - **EIP compliance deviations** are valid Medium findings ONLY if they cause material loss or break integrations
 - **Admin trust:** If contest README states admins are TRUSTED, admin-privilege issues are Invalid. If RESTRICTED, admin overreach is valid.
-- **Known issues** listed in the contest README or previous audits are Invalid
+- **Known issues** listed in the contest README or previous audits are Invalid **only if same severity and same root cause**. A finding that shares a root cause but demonstrates higher severity or a substantively distinct attack path is valid — it must explicitly reference the known issue and explain what is new.
 - **Gas griefing** without material impact is Invalid
 
 ---
@@ -184,7 +184,7 @@ Before submitting each finding:
 - [ ] Impact quantifies the loss and identifies the affected party
 - [ ] PoC compiles and demonstrates the exploit
 - [ ] Severity is accurate per Sherlock's criteria
-- [ ] Finding does not duplicate a known issue from the README
+- [ ] Finding does not duplicate a known issue (same severity + same root cause). If it overlaps with a known issue, the write-up explicitly states what is new (higher severity or distinct attack path).
 - [ ] Finding is within the defined audit scope
 - [ ] If the finding depends on admin trust, verify the contest's trust assumptions
 - [ ] The root cause is the true underlying issue, not a symptom (Sherlock deduplicates by root cause)

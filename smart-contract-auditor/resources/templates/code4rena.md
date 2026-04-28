@@ -169,7 +169,7 @@ In [`Contract.sol#L22`](link), [describe the centralization risk].
 - **High vs Medium:** High = direct viable path to asset loss. Medium = requires external conditions/assumptions.
 - **Medium vs QA:** If it depends on user error, speculative future changes, or non-standard token behavior → QA.
 - **Do not overstate severity.** Code4rena penalizes QA findings submitted as Medium/High.
-- **Known issues** in the audit repo README are out of scope.
+- **Known issues** in the audit repo README are out of scope **only if same severity and same root cause**. If you can demonstrate higher severity or a substantively distinct attack path, the finding is in scope — reference the known issue and explain what is new.
 
 ---
 
@@ -185,5 +185,5 @@ Before submitting each finding:
 - [ ] PoC uses the project's test suite / Foundry framework
 - [ ] Recommended mitigation is specific and actionable
 - [ ] Severity is accurate (not overstated)
-- [ ] Finding is not a known issue from the audit repo README
+- [ ] Finding is not a true duplicate of a known issue (same severity + same root cause). If it overlaps with a known issue, the write-up explicitly states what is new (higher severity or distinct attack path).
 - [ ] Finding is within the defined audit scope

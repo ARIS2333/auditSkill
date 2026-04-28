@@ -1,28 +1,26 @@
 # Phase 3: Automated Scanning
 
-**Purpose:** Run Slither detectors against a codebase you already deeply understand from Phase 2. Because you have the codebase documentation in hand, you can immediately contextualize every detector finding — distinguishing real bugs from false positives with confidence.
+**Purpose:** Run Slither detectors against a codebase you already deeply understand from Phase 2. Because you have the codebase documentation, you can immediately contextualize every detector finding.
 
-**Gate:** Full scan JSON output available and parsed. Findings categorized by severity and contextualized against the Phase 2 codebase documentation.
+**Gate:** Full scan JSON output available and parsed. Findings categorized by severity and contextualized against Phase 2 documentation.
 
-See `tools/slither.md` §4 for all 99 detectors, §6 for targeted scan strategies, §11 for known limitations (what Slither cannot catch).
+**Inputs:**
+- `audit-output/phase-2-docs/codebase-overview.md`
+- `audit-output/phase-2-docs/hypothesis-list.md`
+- Phase 0 detected audit scenarios and Slither base flags
+
+**Outputs:** All JSON/text output to `audit-output/phase-3-scanning/`:
+- `slither-full-report.json`
+- `slither-high-report.json`
+- `slither-scenario.json` (and/or `upgradeability-check.txt`, `erc-check.txt`)
+- `slither-clean-report.json` (optional)
+- `scan-summary.md`
+
+See `resources/tools/slither.md` (Vulnerability Detection section) for all 99 detectors, (Targeted Scan Strategies section) for scan strategies, (Known Limitations section) for blind spots.
 
 ---
 
-## Inputs
-
-- **Phase 2 output:** `audit-output/phase-2-docs/codebase-overview.md`
-- **Phase 2 output:** `audit-output/phase-2-docs/hypothesis-list.md`
-- **Phase 0 output:** Detected audit scenarios, Slither base flags
-
-## Outputs
-
-Direct all JSON output to `audit-output/phase-3-scanning/`.
-
----
-
-## Scans to Run
-
-### 1. Full Scan
+## Step 1: Run Full Scan
 
 All detectors, exclude dependencies and test/script paths:
 
@@ -33,9 +31,7 @@ slither . --foundry-out-directory out \
   --json audit-output/phase-3-scanning/slither-full-report.json
 ```
 
-### 2. High-Impact Focused Scan
-
-Reentrancy, arbitrary-send, delegatecall, suicidal, unprotected-upgrade, uninitialized, unchecked-transfer, shadowing-state, weak-prng, msg-value-loop, incorrect-return, return-leave, incorrect-exp, storage-array:
+## Step 2: Run High-Impact Focused Scan
 
 ```bash
 slither . --foundry-out-directory out \
@@ -45,9 +41,9 @@ slither . --foundry-out-directory out \
   --json audit-output/phase-3-scanning/slither-high-report.json
 ```
 
-### 3. Scenario-Specific Scans
+## Step 3: Run Scenario-Specific Scans
 
-Based on Phase 0.4 detection, save outputs to `audit-output/phase-3-scanning/`:
+Based on Phase 0 Step 5 detection:
 
 | Scenario Detected | Scan |
 |-------------------|------|
@@ -56,11 +52,9 @@ Based on Phase 0.4 detection, save outputs to `audit-output/phase-3-scanning/`:
 | DeFi/Oracle | Oracle-focused detectors: `pyth-deprecated-functions,pyth-unchecked-confidence,pyth-unchecked-publishtime,chronicle-unchecked-price,incorrect-equality,divide-before-multiply,weak-prng` — use `--json audit-output/phase-3-scanning/slither-scenario.json` |
 | Access Control | `suicidal,unprotected-upgrade,tx-origin,arbitrary-send-eth,arbitrary-send-erc20,controlled-delegatecall,protected-vars` — use `--json audit-output/phase-3-scanning/slither-scenario.json` |
 
-**Note:** `slither-check-upgradeability` and `slither-check-erc` are standalone tools that output human-readable text to stdout. They do not support the `--json` flag. Redirect their output to `.txt` files as shown above.
+**Note:** `slither-check-upgradeability` and `slither-check-erc` are standalone tools that output text to stdout. They do not support `--json`. Redirect to `.txt` files as shown.
 
-### 4. Noise Reduction (if needed)
-
-Exclude informational/optimization, or exclude specific low-value detectors:
+## Step 4: Noise Reduction (if needed)
 
 ```bash
 slither . --foundry-out-directory out \
@@ -72,11 +66,11 @@ slither . --foundry-out-directory out \
 
 ---
 
-## Prepare Scan Summary
+## Step 5: Prepare Scan Summary
 
 Write **`audit-output/phase-3-scanning/scan-summary.md`**:
 
-1. Categorize detector findings by severity
+1. Categorize detector findings by severity.
 2. Overlay them onto the Phase 2 hypothesis list — do any detectors confirm your hypotheses? Do any flag functions you ranked "Low"?
-3. For each finding, reference the relevant section of the Phase 2 codebase documentation — the architecture diagram, access control matrix, or user flow that provides context for whether the finding is real
-4. Note which findings need code reading to confirm vs. which are clearly false positives from context you already have
+3. For each finding, reference the relevant section of the Phase 2 codebase documentation — the architecture diagram, access control matrix, or user flow that provides context for whether the finding is real.
+4. Note which findings need code reading to confirm vs. which are clearly false positives from context you already have.

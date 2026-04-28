@@ -43,19 +43,31 @@ For each finding, create a subfolder (e.g., `audit-output/phase-5-findings/H-01/
 - Non-Foundry projects: create minimal Foundry project, copy targets, configure remappings
 - Deployed contracts: configure fork URL and block number
 - Every PoC must: (1) record pre-exploit state, (2) execute the exploit, (3) assert exploit success with meaningful failure messages
-- Use `vm.label` for readable traces. Run with `-vvvv`.
+- Use `vm.label` for readable traces.
 
-### Step 2: Write the finding report
+### Step 2: Run the PoC and capture output
+
+- Run the PoC: `forge test --match-test test_H01_Exploit -vv`
+- Capture the **actual test output** (pass/fail, gas, assertion results)
+- If the PoC fails, debug with `-vvvv` or `-vvvvv` traces before proceeding
+- **Never fabricate test output.** If you cannot run the test, say so.
+
+### Step 3: Write the finding report
 
 - Write to `audit-output/phase-5-findings/H-01/H-01.md`
 - Load the platform template from `templates/`
+- The PoC section of the report must include all three parts:
+  1. **Complete, runnable Solidity code** — the full test file, not a snippet
+  2. **Run command and actual output** — the exact `forge test` command and the real output from Step 2
+  3. **"The output confirms" section** — bullet points explaining what each passing assertion proves about the vulnerability
 - Write root cause, impact, and mitigation while the exploit logic is fresh in context
 - Link to exact line numbers in the codebase
 
-### Step 3: Verify
+### Step 4: Verify
 
 - PoC compiles and passes
 - Finding report is complete and severity is accurate
+- The reported test output matches the actual run
 - If PoC fails: analyze the `-vvvv` trace, diagnose (wrong setUp state, wrong fork block, missed access control, gas limits). If genuinely irreproducible, reclassify as **Potential** with explanation.
 
 ---

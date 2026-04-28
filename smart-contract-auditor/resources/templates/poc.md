@@ -1,3 +1,45 @@
+## PoC Report Format
+
+Every PoC in a finding report must include three parts:
+
+1. **Complete, runnable Solidity code** — the full test file inside a `<details>` block, not a snippet. A reader should be able to copy-paste and run it.
+2. **Run command and actual output** — the exact `forge test` command and the real output captured from running the PoC. Never fabricate output.
+3. **"The output confirms" section** — bullet points explaining what each passing assertion proves about the vulnerability and connecting the test result to the root cause and impact.
+
+Example structure in the finding report:
+
+````markdown
+### Proof of Concept
+
+<details>
+
+```solidity
+// [Full test file here]
+```
+
+</details>
+
+Run command (from repo root):
+
+```
+forge test --match-test test_H01_Exploit -vv
+```
+
+Output:
+
+```
+[Actual forge test output pasted here]
+```
+
+The output confirms:
+
+- [What each passing assertion proves]
+- [How the result demonstrates the root cause]
+- [The concrete impact shown by the PoC]
+````
+
+---
+
 ## Template 1: ETH Drain PoC
 
 ```solidity

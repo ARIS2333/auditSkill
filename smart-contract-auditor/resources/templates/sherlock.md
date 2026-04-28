@@ -98,7 +98,23 @@ contract ExploitPoC is Test {
 
 </details>
 
-Run: `forge test --match-test test_Exploit -vvvv`
+Run command (from repo root):
+
+```
+forge test --match-test test_Exploit -vv
+```
+
+Output:
+
+```
+[PASTE ACTUAL forge test OUTPUT HERE — must be from a real run, never fabricated]
+```
+
+The output confirms:
+
+- [Bullet point explaining what each passing assertion proves about the vulnerability]
+- [Bullet point linking the test result to the root cause described above]
+- [Bullet point showing the concrete impact demonstrated by the PoC]
 
 ### Mitigation
 

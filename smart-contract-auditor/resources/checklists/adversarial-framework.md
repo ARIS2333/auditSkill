@@ -49,11 +49,13 @@ The combination of all three — hard cap exists, no recovery path, negligible c
 These are commonly missed by both static analysis and surface-level code review:
 
 ### Read-Only Reentrancy
+
 Protocol A reads state from Protocol B (e.g., LP token price) while Protocol B is mid-execution. The read returns stale/manipulated values because Protocol B hasn't finalized its state update. Common in lending protocols that price LP tokens by querying pool reserves. Slither reentrancy detectors do NOT catch this.
 
 **What to look for:** Any `view` call to an external contract that returns a value used in pricing, collateral calculation, or access decisions. If the external contract has any function that makes callbacks (token transfers, flash loans), the `view` call can be re-entered.
 
 ### Donation Attacks Beyond ERC4626
+
 Any contract using `balanceOf(address(this))` or `address(this).balance` for accounting can be manipulated via direct token transfer or `selfdestruct` (pre-Dencun) ETH injection. This applies to:
 - Share pricing (the classic ERC4626 inflation attack)
 - Precondition checks ("require balance >= threshold")
@@ -61,27 +63,17 @@ Any contract using `balanceOf(address(this))` or `address(this).balance` for acc
 - Lifecycle functions ("unregister only if no funds remain")
 
 ### Permit Front-Running
+
 Attacker front-runs a `permit` + `transferFrom` combo by calling `permit` with the victim's signature first. Victim's tx reverts on the duplicate permit nonce. Safe pattern: wrap `permit` in try/catch.
 
 ### Signature Replay Across Chains
+
 EIP-712 signatures missing chain ID in the domain separator are replayable on any chain where the contract is deployed at the same address.
 
 ### CREATE2 Address Collision
+
 If a protocol uses `CREATE2` to deploy contracts, an attacker who controls the salt may predict and front-run the address. For `create` + `selfdestruct` + `create2` patterns, an attacker can deploy a different contract at the same address.
 
 ### Transient Storage Assumptions
+
 Reentrancy guards using `TSTORE`/`TLOAD` (EIP-1153) clear at end of transaction, but nested calls within the same tx share transient storage. A guard set in one `TSTORE` slot can be bypassed by a callback that uses a different slot or checks in a different order.
-
----
-
-## Scope Prioritization for Large Codebases
-
-When you have more functions than you can deeply review, prioritize:
-
-1. **Functions that move value** — ETH transfers, token transfers, minting, burning. These are where financial exploits live.
-2. **Functions with complex access control** — multi-role systems, timelocks, threshold checks. Misconfiguration here is high-severity.
-3. **Functions flagged by Slither detectors** (if scanning was enabled in Phase 3) — even if you suspect false positive, verify.
-4. **Functions with zero test coverage** — the developer didn't think about edge cases here.
-5. **Functions at trust boundaries** — anything that takes external input (user parameters, oracle data, cross-contract return values).
-
-Deprioritize: view-only functions with no downstream consumers, well-tested utility libraries, functions guarded by timelock + multisig with simple logic.

@@ -48,14 +48,31 @@ Record each potential vector in the attack plan template §2 (Access Control Att
 
 ---
 
-## Step 3: Apply Domain-Specific Playbooks and Checklists
+## Step 3: Apply Domain-Specific Playbooks, Attack Patterns, and Token Checklists
 
-Based on the audit scenarios detected in Phase 0 Step 5, read the matching playbook files from `resources/checklists/playbooks/` and the relevant checklists from `resources/checklists/`.
+Based on the audit scenarios detected in Phase 0 Step 5, read the matching playbook files from `resources/checklists/playbooks/`:
 
-For each playbook/checklist item:
+| Phase 0 Scenario Detected | Playbook File |
+|----------------------------|---------------|
+| Proxy / Upgradeable | `playbooks/proxy-upgradeable.md` |
+| DeFi / Oracle → Lending | `playbooks/lending-borrowing.md` |
+| DeFi / Oracle → AMM | `playbooks/amm-dex.md` |
+| Token (ERC20/721/1155) | `resources/checklists/non-standard-tokens.md` |
+| Vault / ERC4626 | `playbooks/vault-erc4626.md` |
+| Cross-chain / Bridge | `playbooks/cross-chain-bridge.md` |
+| Staking / Restaking | `playbooks/staking-restaking.md` |
+| Governance / Timelock | `playbooks/governance-timelock.md` |
+| Perpetuals / Derivatives | `playbooks/perpetuals-derivatives.md` |
+| Token Launch / Bonding Curve | `playbooks/token-launch-bonding.md` |
+| Yield Aggregator | `playbooks/yield-aggregator.md` |
+
+**Multiple playbooks can apply.** A lending protocol with upgradeable proxies and oracle dependencies should activate `lending-borrowing.md` + `proxy-upgradeable.md` + any relevant token checklists.
+
+For each playbook item:
 1. Check whether the pattern exists in the Phase 2 codebase documentation.
 2. If the codebase documentation describes a mechanism that matches, record it as a potential vector.
-3. Cross-reference with the adversarial framework (`resources/checklists/adversarial-framework.md`) for modern attack patterns (read-only reentrancy, donation attacks, permit front-running, etc.).
+
+Then cross-reference with `resources/checklists/adversarial-framework.md` §Modern Attack Patterns for patterns (read-only reentrancy, donation attacks, permit front-running, etc.) that apply to the detected scenarios.
 
 If the protocol interacts with arbitrary external tokens, consult `resources/checklists/non-standard-tokens.md` and flag any token behaviors the protocol does not appear to handle.
 

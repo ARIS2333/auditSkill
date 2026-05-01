@@ -12,7 +12,7 @@ AI 在审计智能合约时会产生幻觉 — 误读继承链、凭空捏造访
 
 | 阶段 | 名称 | 内容 |
 |------|------|------|
-| 0 | 环境搭建 | 检测项目类型，验证编译，识别审计场景（DeFi、代理合约、代币、跨链、质押、瞬态存储），选择提交平台，选择是否启用 Slither 扫描 |
+| 0 | 环境搭建 | 检测项目类型，验证编译，识别审计场景（DeFi、Vault/ERC4626、代理合约、代币、跨链、质押、治理、永续合约、代币发行、收益聚合器、瞬态存储），选择提交平台，选择是否启用 Slither 扫描 |
 | 1 | 结构侦察 | 运行 12 个 Slither printer，映射继承关系、入口点、函数-状态变量关系、存储布局和访问控制。**此阶段不读代码。** |
 | 2 | 代码库文档 | 以阶段 1 输出为指引，深入阅读源代码。生成包含 Mermaid 图表的综合代码库文档（13 个章节）。 |
 | 3 | 攻击规划 | 基于阶段 1+2 输出规划攻击向量 — 不读源代码。分析资金流、访问控制缺口、领域特定模式和权限/管理风险。可选运行 Slither 检测器。 |
@@ -99,17 +99,21 @@ cp -r /path/to/smart-contract-auditor/smart-contract-auditor .claude/skills/smar
     │   ├── code4rena.md                    # Code4rena 提交格式
     │   └── sherlock.md                     # Sherlock 提交格式
     ├── checklists/
-    │   ├── adversarial-framework.md        # 攻击思维框架
+    │   ├── adversarial-framework.md        # 对抗性思维与攻击模式
     │   ├── code-reading-checklist.md       # 25 项安全代码审阅清单
     │   ├── non-standard-tokens.md          # 14 种非标准 ERC20 行为
     │   ├── privilege-risk.md               # 权限角色枚举与密钥泄露分析
-    │   ├── domain-playbooks.md             # 领域特定攻击检查清单索引
     │   └── playbooks/                      # 各领域攻击检查清单
     │       ├── amm-dex.md
     │       ├── vault-erc4626.md
     │       ├── proxy-upgradeable.md
     │       ├── lending-borrowing.md
-    │       └── other-playbooks.md
+    │       ├── cross-chain-bridge.md
+    │       ├── staking-restaking.md
+    │       ├── governance-timelock.md
+    │       ├── perpetuals-derivatives.md
+    │       ├── token-launch-bonding.md
+    │       └── yield-aggregator.md
     └── phases/
         ├── phase-0-setup.md
         ├── phase-1-recon.md
@@ -172,11 +176,10 @@ smart-contract-auditor/
     │   ├── code4rena.md                  # Code4rena 提交格式与严重性指南
     │   └── sherlock.md                   # Sherlock 提交格式与去重模型
     ├── checklists/
-    │   ├── adversarial-framework.md      # 攻击思维与现代攻击模式
+    │   ├── adversarial-framework.md      # 对抗性思维与攻击模式
     │   ├── code-reading-checklist.md     # 25 项安全代码审阅清单
     │   ├── non-standard-tokens.md        # 14 种非标准 ERC20 代币行为
     │   ├── privilege-risk.md             # 权限角色枚举与密钥泄露分析
-    │   ├── domain-playbooks.md           # 领域特定攻击检查清单索引
     │   └── playbooks/                    # 各领域攻击检查清单（10 种协议类型）
     └── phases/
         ├── phase-0-setup.md              # 环境搭建、范围发现、Slither 扫描选择

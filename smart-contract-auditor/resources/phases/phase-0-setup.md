@@ -94,10 +94,15 @@ Run `slither --version`. If Slither fails to analyze the project:
 Grep the codebase for patterns that activate conditional checks in later phases:
 - **Proxy/Upgradeable:** `delegatecall`, `ERC1967`, `TransparentUpgradeableProxy`, `UUPSUpgradeable`, `BeaconProxy`, `initializer`
 - **DeFi/Oracle:** `swap`, `liquidity`, `borrow`, `lend`, `oracle`, `getPrice`, `latestRoundData`, `latestAnswer`
+- **Vault/ERC4626:** `ERC4626`, `convertToShares`, `convertToAssets`, `totalAssets`, `previewDeposit`, `previewRedeem`
 - **Token:** `ERC20`, `ERC721`, `ERC1155`, `ERC777`, `_mint`, `_burn`, `permit`
 - **Token interactions (arbitrary tokens):** `transferFrom`, `safeTransferFrom`, `IERC20`, `SafeERC20` — flag for non-standard token review using `resources/checklists/non-standard-tokens.md`
 - **Cross-chain:** `bridge`, `relayer`, `lzReceive`, `ccipReceive`
 - **Staking/Restaking:** `stake`, `unstake`, `restake`, `slash`, `operator`, `delegation`, `withdrawal`
+- **Governance/Timelock:** `propose`, `vote`, `execute`, `queue`, `timelock`, `quorum`, `Governor`
+- **Perpetuals/Derivatives:** `openPosition`, `closePosition`, `fundingRate`, `markPrice`, `margin`, `leverage`
+- **Token Launch/Bonding Curve:** `bondingCurve`, `LBP`, `vesting`, `cliff`, `unlock`, `launch`
+- **Yield Aggregator:** `strategy`, `harvest`, `compound`, `rebalance`, `emergencyWithdraw`
 - **Transient storage:** `TSTORE`, `TLOAD`, `tstore`, `tload` — flag for EIP-1153 security review
 
 ## Step 6: Assess Scope Size & Set Workflow Intensity

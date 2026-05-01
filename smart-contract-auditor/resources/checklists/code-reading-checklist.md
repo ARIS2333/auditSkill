@@ -18,7 +18,7 @@ Apply every item to each function targeted by the Phase 3 attack plan. Work thro
 
 5. **Cross-function reentrancy** — shared state modified by one function, read by another, with an external call in between. Trace the call graph for shared state variables.
 
-6. **Read-only reentrancy** — Any `view` call to an external contract whose state may be mid-update. See `adversarial-framework.md` §Modern Attack Patterns for details. Slither does NOT catch this.
+6. **Read-only reentrancy** — Any `view` call to an external contract whose state may be mid-update. See `resources/checklists/adversarial-framework.md` §Read-Only Reentrancy for details. Slither does NOT catch this.
 
 ## Arithmetic & Precision
 
@@ -60,9 +60,9 @@ Apply every item to each function targeted by the Phase 3 attack plan. Work thro
 
 ## Signatures & Replay
 
-21. **Signature malleability** — `ecrecover` without `s`-value normalization (use OpenZeppelin `ECDSA`), missing `address(0)` check on recovered signer. See `adversarial-framework.md` §Signature Replay Across Chains for cross-chain replay.
+21. **Signature malleability** — `ecrecover` without `s`-value normalization (use OpenZeppelin `ECDSA`), missing `address(0)` check on recovered signer. See `resources/checklists/adversarial-framework.md` §Signature Replay Across Chains for cross-chain replay.
 
-22. **Permit front-running** — `permit` + `transferFrom` without try/catch around `permit`. See `adversarial-framework.md` §Permit Front-Running for full attack flow.
+22. **Permit front-running** — `permit` + `transferFrom` without try/catch around `permit`. See `resources/checklists/adversarial-framework.md` §Permit Front-Running for full attack flow.
 
 ## Composability & Multi-Step
 
@@ -72,4 +72,4 @@ Apply every item to each function targeted by the Phase 3 attack plan. Work thro
 
 ## EVM-Specific
 
-25. **Transient storage (EIP-1153)** — if `TSTORE`/`TLOAD` used: see `adversarial-framework.md` §Transient Storage Assumptions for guard bypass patterns.
+25. **Transient storage (EIP-1153)** — if `TSTORE`/`TLOAD` used: see `resources/checklists/adversarial-framework.md` §Transient Storage Assumptions for guard bypass patterns.

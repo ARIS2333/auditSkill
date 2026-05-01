@@ -25,7 +25,7 @@ You are an ethical smart contract security auditor for EVM-compatible blockchain
 | Adversarial thinking & attack patterns | `resources/checklists/adversarial-framework.md` |
 | Privilege & management risk analysis | `resources/checklists/privilege-risk.md` |
 | Auditing token interactions | `resources/checklists/non-standard-tokens.md` |
-| Domain-specific attack vectors | `resources/checklists/domain-playbooks.md` (index) → `resources/checklists/playbooks/*.md` (per domain) |
+| Domain-specific attack vectors | `resources/checklists/playbooks/*.md` (per domain — see Phase 3 Step 3 for mapping) |
 | Formatting a finding for submission | `resources/templates/code4rena.md` or `resources/templates/sherlock.md` |
 
 **Official repos** (consult for persistent errors or syntax verification):

@@ -14,7 +14,7 @@ Slither vulnerability scanning (detectors) is **off by default** — detector no
 
 | Phase | Name | What Happens |
 |-------|------|-------------|
-| 0 | Environment Setup | Detect project type, verify compilation, identify audit scenarios (DeFi, proxy, token, cross-chain, staking, transient storage), select submission platform, choose whether to enable Slither scanning |
+| 0 | Environment Setup | Detect project type, verify compilation, identify audit scenarios (DeFi, vault/ERC4626, proxy, token, cross-chain, staking, governance, perpetuals, token launch, yield aggregator, transient storage), select submission platform, choose whether to enable Slither scanning |
 | 1 | Structural Reconnaissance | Run 12 Slither printers to map inheritance, entry points, function-to-state-variable relationships, storage layout, and access control. **No code reading.** |
 | 2 | Codebase Documentation | Dive into source code guided by Phase 1 outputs. Produce a comprehensive Mermaid-based codebase document (13 sections). |
 | 3 | Attack Planning | Plan attack vectors from Phase 1+2 outputs — no code reading. Analyze value flows, access control gaps, domain-specific patterns, and privilege/management risks. Optionally run Slither detectors. |
@@ -101,17 +101,21 @@ If it doesn't appear, check that the folder structure is correct:
     │   ├── code4rena.md                    # Code4rena submission format
     │   └── sherlock.md                     # Sherlock submission format
     ├── checklists/
-    │   ├── adversarial-framework.md        # Attack thinking framework
+    │   ├── adversarial-framework.md        # Adversarial thinking & attack patterns
     │   ├── code-reading-checklist.md       # 25-item security checklist
     │   ├── non-standard-tokens.md          # 14 non-standard ERC20 behaviors
     │   ├── privilege-risk.md               # Role enumeration & key compromise analysis
-    │   ├── domain-playbooks.md             # Domain-specific attack checklist index
     │   └── playbooks/                      # Per-domain attack checklists
     │       ├── amm-dex.md
     │       ├── vault-erc4626.md
     │       ├── proxy-upgradeable.md
     │       ├── lending-borrowing.md
-    │       └── other-playbooks.md
+    │       ├── cross-chain-bridge.md
+    │       ├── staking-restaking.md
+    │       ├── governance-timelock.md
+    │       ├── perpetuals-derivatives.md
+    │       ├── token-launch-bonding.md
+    │       └── yield-aggregator.md
     └── phases/
         ├── phase-0-setup.md
         ├── phase-1-recon.md
@@ -183,11 +187,10 @@ smart-contract-auditor/
     │   ├── code4rena.md                  # Code4rena submission format & severity guide
     │   └── sherlock.md                   # Sherlock submission format & dedup model
     ├── checklists/
-    │   ├── adversarial-framework.md      # Adversarial thinking & modern attack patterns
+    │   ├── adversarial-framework.md      # Adversarial thinking & attack patterns
     │   ├── code-reading-checklist.md     # 25-item security code reading checklist
     │   ├── non-standard-tokens.md        # 14 non-standard ERC20 token behaviors
     │   ├── privilege-risk.md             # Privilege role enumeration & key compromise analysis
-    │   ├── domain-playbooks.md           # Domain-specific attack checklists index
     │   └── playbooks/                    # Per-domain attack checklists (10 protocol types)
     └── phases/
         ├── phase-0-setup.md              # Environment setup, scope discovery, Slither opt-in

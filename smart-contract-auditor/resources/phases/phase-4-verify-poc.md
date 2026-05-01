@@ -19,7 +19,7 @@
 - `resources/tools/foundry.md` (Cheatcodes and PoC Workflow sections)
 - `resources/templates/poc.md` for starter templates
 - `resources/checklists/code-reading-checklist.md` for systematic code review
-- `resources/checklists/adversarial-framework.md` for attack thinking
+- `resources/checklists/adversarial-framework.md` for attack thinking (core questions, impact amplification, modern attack patterns)
 - `resources/tools/slither.md` (Detector-to-PoC Mapping section, if Slither was used)
 
 ---
@@ -39,7 +39,7 @@ For each attack vector, follow this workflow:
 1. **Open the structural summary** — read the target function's entry in §3 (Entry Points & Access Control). Note visibility, modifiers, state variables written.
 2. **Read the source code** for the target function and all functions it calls internally.
 3. **Apply the code reading checklist** (`resources/checklists/code-reading-checklist.md`) — work through every item systematically for the target function.
-4. **Apply adversarial thinking** (`resources/checklists/adversarial-framework.md`) — try to break the invariants identified in Phase 2.
+4. **Apply adversarial thinking** (`resources/checklists/adversarial-framework.md`) — try to break the invariants identified in Phase 2. Consult the §Modern Attack Patterns section when the code matches a known pattern.
 
 ### 2.2 Classify the Finding
 
@@ -125,6 +125,20 @@ If code reading reveals information that the Phase 2 codebase document is missin
 ---
 
 ## Step 7: Additional Verification (When Time Permits)
+
+### Scope Prioritization for Large Codebases
+
+When you have more functions than you can deeply review, prioritize:
+
+1. **Functions that move value** — ETH transfers, token transfers, minting, burning. These are where financial exploits live.
+2. **Functions with complex access control** — multi-role systems, timelocks, threshold checks. Misconfiguration here is high-severity.
+3. **Functions flagged by Slither detectors** (if scanning was enabled in Phase 3) — even if you suspect false positive, verify.
+4. **Functions with zero test coverage** — the developer didn't think about edge cases here.
+5. **Functions at trust boundaries** — anything that takes external input (user parameters, oracle data, cross-contract return values).
+
+Deprioritize: view-only functions with no downstream consumers, well-tested utility libraries, functions guarded by timelock + multisig with simple logic.
+
+### Additional Testing
 
 - **Fuzz testing** for protocol invariants (`testFuzz_` pattern, `bound()` for input ranges)
 - **Stateful invariant testing** for complex protocols (`invariant_` pattern with handler contracts) — see `resources/tools/foundry.md` (Invariant Testing section)

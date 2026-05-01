@@ -24,14 +24,12 @@
 
 Read Phase 2 codebase overview sections: User Flows (§6), Value Flow (§8), Token Accounting (§8), Key Invariants (§12).
 
-For each user flow that moves value (deposits, withdrawals, swaps, claims, liquidations, fee collection):
+For each user flow that moves value (deposits, withdrawals, swaps, claims, liquidations, fee collection), apply the Core Questions from `resources/checklists/adversarial-framework.md` and additionally:
 
 1. **Trace the money.** Where do tokens/ETH enter? Where do they exit? Who profits?
 2. **Challenge every exchange rate.** Share price calculations, oracle-dependent valuations, fee computations — can any be manipulated?
 3. **Check boundary conditions.** First depositor, empty vault/pool, zero amounts, maximum values, dust amounts.
-4. **Check ordering assumptions.** Can calling functions in an unexpected order break invariants?
-5. **Check flash loan amplification.** Can borrowed capital exploit any state within a single transaction?
-6. **Check MEV exposure.** Are there sandwich-vulnerable swaps, front-runnable state changes, or missing commit-reveal patterns?
+4. **Check flash loan amplification.** Can borrowed capital exploit any state within a single transaction?
 
 Record each potential vector in the attack plan template §1 (Value Flow Attack Vectors).
 
@@ -67,13 +65,7 @@ Record findings in the attack plan template §3 (Domain-Specific Attack Vectors)
 
 ## Step 4: Privilege & Management Risk Analysis
 
-Read `resources/checklists/privilege-risk.md` for the full checklist. Use Phase 2 codebase overview: Access Control Matrix (§7), Known Risks & Trust Assumptions (§13).
-
-1. **Enumerate every privileged role** from the access control matrix.
-2. **Per-role power analysis:** For each role, list what functions it can call and what state/funds it can affect — direct fund access, indirect fund access (upgrade, oracle change, strategy change), DoS capability, role escalation.
-3. **Key compromise scenarios:** For each role, describe the worst case if the private key is compromised. Assess: funds at risk, time to exploit (instant vs. timelocked), recovery paths.
-4. **Mitigation assessment:** Check for timelocks, multisig, caps, pausability, two-step transfers, role separation.
-5. **Role escalation paths:** Can any role grant itself additional privileges or bypass restrictions?
+Work through `resources/checklists/privilege-risk.md` (Steps 1-4) using Phase 2 codebase overview: Access Control Matrix (§7) and Known Risks & Trust Assumptions (§13) as inputs.
 
 Record in the attack plan template §4 (Privilege & Management Risk Analysis).
 

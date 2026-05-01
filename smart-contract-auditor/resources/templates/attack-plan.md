@@ -16,15 +16,7 @@ Use this template for `audit-output/phase-3-planning/attack-plan.md`. This is th
 
 ## 1. Value Flow Attack Vectors
 
-Derived from Phase 2: User Flows (§6), Value Flow (§8), Token Accounting (§8), Key Invariants (§12).
-
-For each value flow (deposit, withdraw, swap, claim, liquidate, etc.), consider:
-- "How would I extract more value than I put in?"
-- "Can I manipulate the exchange rate / share price / oracle price?"
-- "Can I front-run or sandwich this operation?"
-- "Can I use a flash loan to amplify an attack?"
-- "What happens at boundary values (zero, first depositor, max)?"
-- "Does rounding favor the user or the protocol? Can I exploit the direction?"
+Derived from Phase 2: User Flows (§6), Value Flow (§8), Token Accounting (§8), Key Invariants (§12). Apply Phase 3 Step 1 analysis and `resources/checklists/adversarial-framework.md` Core Questions.
 
 | # | Target Flow | Attack Vector | Contracts Involved | Priority |
 |---|-------------|--------------|-------------------|----------|
@@ -34,13 +26,7 @@ For each value flow (deposit, withdraw, swap, claim, liquidate, etc.), consider:
 
 ## 2. Access Control Attack Vectors
 
-Derived from Phase 1: Entry Points & Access Control (§3), Unguarded Functions (§4). Phase 2: Access Control Matrix (§7).
-
-For each entry point, consider:
-- "Can I reach this function without the expected privilege?"
-- "Are there unguarded state-modifying functions?"
-- "Can I bypass access control via an indirect call path?"
-- "Does an initializer lack protection?"
+Derived from Phase 1: Entry Points & Access Control (§3), Unguarded Functions (§4). Phase 2: Access Control Matrix (§7). Apply Phase 3 Step 2 analysis.
 
 | # | Target Function | Attack Vector | Why Suspicious | Priority |
 |---|----------------|--------------|----------------|----------|

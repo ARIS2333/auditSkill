@@ -88,10 +88,7 @@ See `resources/templates/poc.md` for starter templates. See `resources/tools/fou
 
 - Write to `audit-output/phase-4-findings/H-01/H-01.md`
 - Load the platform template from `resources/templates/`
-- The PoC section must include all three parts:
-  1. **Complete, runnable Solidity code** — the full test file, not a snippet
-  2. **Run command and actual output** — the exact `forge test` command and real output from Step 3.2
-  3. **"The output confirms" section** — bullet points explaining what each passing assertion proves
+- The PoC section must follow the 3-part format in `resources/templates/poc.md` §PoC Report Format
 - Write root cause, impact, and mitigation while the exploit logic is fresh
 - Link to exact line numbers in the codebase
 
@@ -117,11 +114,7 @@ For each confirmed privilege/management risk from the attack plan §4, create a 
 
 ## Step 5: Anti-Hallucination Enforcement
 
-Every claim about a function's behavior must be verified against `function-summary` in the structural summary. If your reading disagrees with the printer:
-
-1. The printer output is correct (derived from the AST).
-2. Re-read. Common causes: wrong contract (override), local vs state variable confusion, inheritance chain.
-3. Only override the printer if you can point to the exact line AND explain why (e.g., inline assembly, delegatecall).
+Apply the Anti-Hallucination Rule from `SKILL.md` §Foundational Principles. If your code reading disagrees with the printer, the printer is correct — re-read. Only override the printer if you can cite the exact line and explain why (inline assembly, delegatecall).
 
 ---
 

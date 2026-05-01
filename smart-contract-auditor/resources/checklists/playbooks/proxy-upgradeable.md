@@ -98,17 +98,4 @@ constructor() {
 
 ## 8. Proxy-Specific Slither Checks
 
-Run `slither-check-upgradeability` for automated detection:
-
-```bash
-slither-check-upgradeability . ImplementationContract
-```
-
-For comparing V1 → V2:
-```bash
-slither-check-upgradeability . ContractV1 \
-  --new-contract-name ContractV2 \
-  --new-contract-filename ./src/ContractV2.sol
-```
-
-This checks 17 conditions including: variables with initialization values, function ID collisions, missing initializer modifier, incorrect storage ordering.
+Run `slither-check-upgradeability` for automated detection. See `resources/tools/slither.md` §Upgradeability Analysis for full command syntax and the 17 checks performed.

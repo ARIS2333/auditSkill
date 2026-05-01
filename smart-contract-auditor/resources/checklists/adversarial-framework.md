@@ -32,19 +32,6 @@ For every external dependency:
 
 ---
 
-## Pattern Propagation
-
-**When you find a vulnerability pattern in one function, immediately search for the same pattern across ALL in-scope contracts.** Vulnerability patterns rarely occur in isolation.
-
-Examples:
-- Found a `balanceOf(address(this))` donation issue in `totalAssets()`? → `grep -rn 'balanceOf' src/` and review every hit. Administrative functions, precondition gates, and lifecycle checks may have the same vulnerability.
-- Found a rounding/dust issue in deposit math? → Check every function that reads or checks the rounded value — can leftover dust block a different operation (unregistration, migration, settlement)?
-- Found a missing access control on one setter? → Check all setters in the same contract and in sibling contracts.
-
-Run the relevant `grep` and review every hit, not just the ones already in your attack plan.
-
----
-
 ## Impact Amplification
 
 For every DoS or griefing vector, check whether hard caps or resource limits turn a minor nuisance into a critical block:

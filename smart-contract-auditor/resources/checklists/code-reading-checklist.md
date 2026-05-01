@@ -18,7 +18,7 @@ Apply every item to each function targeted by the Phase 3 attack plan. Work thro
 
 5. **Cross-function reentrancy** — shared state modified by one function, read by another, with an external call in between. Trace the call graph for shared state variables.
 
-6. **Read-only reentrancy** — Protocol A reads state from Protocol B while Protocol B is mid-execution. The read returns stale/manipulated values. Slither does NOT catch this because the reentrant call is a `view` function.
+6. **Read-only reentrancy** — Any `view` call to an external contract whose state may be mid-update. See `adversarial-framework.md` §Modern Attack Patterns for details. Slither does NOT catch this.
 
 ## Arithmetic & Precision
 
@@ -60,9 +60,9 @@ Apply every item to each function targeted by the Phase 3 attack plan. Work thro
 
 ## Signatures & Replay
 
-21. **Signature malleability** — `ecrecover` without `s`-value normalization (use OpenZeppelin `ECDSA`), missing `address(0)` check on recovered signer, cross-chain replay (missing chain ID in domain separator).
+21. **Signature malleability** — `ecrecover` without `s`-value normalization (use OpenZeppelin `ECDSA`), missing `address(0)` check on recovered signer. See `adversarial-framework.md` §Signature Replay Across Chains for cross-chain replay.
 
-22. **Permit front-running** — attacker front-runs a `permit` + `transferFrom` combo by calling `permit` with the victim's signature first. Victim's tx reverts. Safe pattern: wrap `permit` in try/catch.
+22. **Permit front-running** — `permit` + `transferFrom` without try/catch around `permit`. See `adversarial-framework.md` §Permit Front-Running for full attack flow.
 
 ## Composability & Multi-Step
 
@@ -72,4 +72,4 @@ Apply every item to each function targeted by the Phase 3 attack plan. Work thro
 
 ## EVM-Specific
 
-25. **Transient storage (EIP-1153)** — if `TSTORE`/`TLOAD` used: reentrancy guards relying on transient storage clear at end of transaction. Nested calls within the same tx share transient storage. A callback from an external contract may bypass the guard if using a different slot.
+25. **Transient storage (EIP-1153)** — if `TSTORE`/`TLOAD` used: see `adversarial-framework.md` §Transient Storage Assumptions for guard bypass patterns.

@@ -21,71 +21,7 @@ In [`Contract.sol#L44-L55`](https://github.com/code-423n4/YYYY-MM-project/blob/c
 
 ### Proof of Concept
 
-<details>
-
-```solidity
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
-
-import "forge-std/Test.sol";
-import "../src/TargetContract.sol";
-
-contract ExploitPoC is Test {
-    TargetContract public target;
-    address public constant ATTACKER = address(0x1337);
-    address public constant VICTIM = address(0xdead);
-
-    function setUp() public {
-        // Deploy or fork
-        target = new TargetContract();
-        // Or: vm.createSelectFork(vm.rpcUrl("mainnet"), BLOCK_NUMBER);
-
-        vm.deal(ATTACKER, 100 ether);
-        vm.deal(VICTIM, 1000 ether);
-
-        vm.prank(VICTIM);
-        target.deposit{value: 500 ether}();
-
-        vm.label(address(target), "Target");
-        vm.label(ATTACKER, "Attacker");
-        vm.label(VICTIM, "Victim");
-    }
-
-    function test_H01_Exploit() public {
-        uint256 attackerBalBefore = ATTACKER.balance;
-        console.log("Pre-exploit attacker balance:", attackerBalBefore);
-
-        vm.startPrank(ATTACKER);
-        // --- EXPLOIT LOGIC ---
-        vm.stopPrank();
-
-        uint256 attackerBalAfter = ATTACKER.balance;
-        console.log("Post-exploit attacker balance:", attackerBalAfter);
-
-        assertGt(attackerBalAfter, attackerBalBefore, "Exploit failed: no profit");
-    }
-}
-```
-
-</details>
-
-Run command (from repo root):
-
-```
-forge test --match-test test_H01_Exploit -vv
-```
-
-Output:
-
-```
-[PASTE ACTUAL forge test OUTPUT HERE — must be from a real run, never fabricated]
-```
-
-The output confirms:
-
-- [Bullet point explaining what each passing assertion proves about the vulnerability]
-- [Bullet point linking the test result to the root cause described above]
-- [Bullet point showing the concrete impact demonstrated by the PoC]
+Use a PoC template from `resources/templates/poc.md`. Follow the 3-part format defined there (runnable code, run command + actual output, "output confirms" bullets).
 
 ### Recommended Mitigation
 
@@ -169,7 +105,7 @@ In [`Contract.sol#L22`](link), [describe the centralization risk].
 - **High vs Medium:** High = direct viable path to asset loss. Medium = requires external conditions/assumptions.
 - **Medium vs QA:** If it depends on user error, speculative future changes, or non-standard token behavior → QA.
 - **Do not overstate severity.** Code4rena penalizes QA findings submitted as Medium/High.
-- **Known issues** in the audit repo README are out of scope **only if same severity and same root cause**. If you can demonstrate higher severity or a substantively distinct attack path, the finding is in scope — reference the known issue and explain what is new.
+- **Known issues:** see Phase 0 Step 10 for the scoping rule (same severity + same root cause = out of scope; higher severity or distinct attack path = in scope).
 
 ---
 

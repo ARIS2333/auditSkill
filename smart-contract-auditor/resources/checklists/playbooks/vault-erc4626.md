@@ -88,6 +88,4 @@ These must return accurate limits. If `maxWithdraw` returns a value larger than 
 
 ## 8. Fee-on-Transfer Token Interaction
 
-If the vault accepts arbitrary ERC20 tokens, a fee-on-transfer token will cause `balanceOf(address(this))` to increase by less than `amount` passed to `transferFrom`. If the vault uses `amount` instead of the actual received amount for share calculation, share accounting diverges from reality.
-
-**Cross-reference:** `resources/checklists/non-standard-tokens.md` (fee-on-transfer section).
+If the vault accepts arbitrary ERC20 tokens, check `resources/checklists/non-standard-tokens.md` §1 (Fee-on-Transfer). The vault must use balance-before/balance-after accounting, not the raw `amount` from `transferFrom`.

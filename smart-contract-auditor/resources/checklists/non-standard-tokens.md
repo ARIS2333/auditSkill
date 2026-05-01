@@ -227,19 +227,12 @@ token.approve(spender, amount);
 **Behavior:** Gasless approvals via signed message (`permit`). The `permit` function can be called by anyone with a valid signature.
 
 **How to detect in code:**
-- `permit` + `transferFrom` in the same function — front-running: attacker calls `permit` first, victim's tx reverts on duplicate permit
-- Missing `try/catch` around `permit` calls
-- Signature replay across chains (missing `DOMAIN_SEPARATOR` chain ID check)
-
-**Specific attack:**
-```
-1. Alice signs permit for Protocol
-2. Bob sees mempool, front-runs: calls permit(Alice's sig)
-3. Alice's tx calls permit(same sig) -> reverts (nonce already used)
-4. Alice's deposit fails, but her allowance is now set
-```
+- `permit` + `transferFrom` in the same function without `try/catch` around `permit`
+- Missing `DOMAIN_SEPARATOR` chain ID check (cross-chain replay)
 
 **Safe pattern:** Wrap `permit` in try/catch — if it fails, check if allowance is already sufficient.
+
+See `resources/checklists/adversarial-framework.md` §Permit Front-Running and §Signature Replay Across Chains for full attack flows.
 
 ---
 

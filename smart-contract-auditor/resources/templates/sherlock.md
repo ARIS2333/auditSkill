@@ -49,72 +49,7 @@ In [`Contract.sol:L44`](https://github.com/sherlock-audit/YYYY-MM-project/blob/c
 
 ### PoC
 
-<details>
-<summary>Proof of Concept</summary>
-
-```solidity
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
-
-import "forge-std/Test.sol";
-import "../src/TargetContract.sol";
-
-contract ExploitPoC is Test {
-    TargetContract public target;
-    address public constant ATTACKER = address(0x1337);
-    address public constant VICTIM = address(0xdead);
-
-    function setUp() public {
-        // Deploy or fork
-        target = new TargetContract();
-        // Or: vm.createSelectFork(vm.rpcUrl("mainnet"), BLOCK_NUMBER);
-
-        vm.deal(ATTACKER, 100 ether);
-        vm.deal(VICTIM, 1000 ether);
-
-        vm.prank(VICTIM);
-        target.deposit{value: 500 ether}();
-
-        vm.label(address(target), "Target");
-        vm.label(ATTACKER, "Attacker");
-        vm.label(VICTIM, "Victim");
-    }
-
-    function test_Exploit() public {
-        uint256 attackerBalBefore = ATTACKER.balance;
-        console.log("Pre-exploit attacker balance:", attackerBalBefore);
-
-        vm.startPrank(ATTACKER);
-        // --- EXPLOIT LOGIC ---
-        vm.stopPrank();
-
-        uint256 attackerBalAfter = ATTACKER.balance;
-        console.log("Post-exploit attacker balance:", attackerBalAfter);
-
-        assertGt(attackerBalAfter, attackerBalBefore, "Exploit failed: no profit");
-    }
-}
-```
-
-</details>
-
-Run command (from repo root):
-
-```
-forge test --match-test test_Exploit -vv
-```
-
-Output:
-
-```
-[PASTE ACTUAL forge test OUTPUT HERE — must be from a real run, never fabricated]
-```
-
-The output confirms:
-
-- [Bullet point explaining what each passing assertion proves about the vulnerability]
-- [Bullet point linking the test result to the root cause described above]
-- [Bullet point showing the concrete impact demonstrated by the PoC]
+Use a PoC template from `resources/templates/poc.md`. Follow the 3-part format defined there (runnable code, run command + actual output, "output confirms" bullets).
 
 ### Mitigation
 
@@ -166,7 +101,7 @@ The output confirms:
 **Sherlock-specific rules:**
 - **EIP compliance deviations** are valid Medium findings ONLY if they cause material loss or break integrations
 - **Admin trust:** If contest README states admins are TRUSTED, admin-privilege issues are Invalid. If RESTRICTED, admin overreach is valid.
-- **Known issues** listed in the contest README or previous audits are Invalid **only if same severity and same root cause**. A finding that shares a root cause but demonstrates higher severity or a substantively distinct attack path is valid — it must explicitly reference the known issue and explain what is new.
+- **Known issues:** see Phase 0 Step 10 for the scoping rule. A finding that shares a root cause but demonstrates higher severity or a distinct attack path is valid — it must reference the known issue and explain what is new.
 - **Gas griefing** without material impact is Invalid
 
 ---

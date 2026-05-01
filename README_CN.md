@@ -2,7 +2,7 @@
 
 **[English](README.md) | [中文](README_CN.md)**
 
-一个 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) 自定义技能，将 Claude 打造为结构化的智能合约安全审计员。使用 **Slither** 进行静态分析，**Foundry** 进行漏洞 PoC 开发，遵循 7 阶段工作流程（阶段 0-6），旨在最大限度减少 AI 幻觉。
+一个 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) 自定义技能，将 Claude 打造为结构化的智能合约安全审计员。使用 **Slither** 进行结构分析，**Foundry** 进行漏洞 PoC 开发，遵循 6 阶段工作流程（阶段 0-5），旨在最大限度减少 AI 幻觉。Slither 漏洞扫描为可选功能（默认关闭）。
 
 ## 为什么需要这个技能？
 
@@ -12,15 +12,14 @@ AI 在审计智能合约时会产生幻觉 — 误读继承链、凭空捏造访
 
 | 阶段 | 名称 | 内容 |
 |------|------|------|
-| 0 | 环境搭建 | 检测项目类型，验证编译，识别审计场景（DeFi、代理合约、代币、跨链、质押、瞬态存储），选择提交平台 |
+| 0 | 环境搭建 | 检测项目类型，验证编译，识别审计场景（DeFi、代理合约、代币、跨链、质押、瞬态存储），选择提交平台，选择是否启用 Slither 扫描 |
 | 1 | 结构侦察 | 运行 12 个 Slither printer，映射继承关系、入口点、函数-状态变量关系、存储布局和访问控制。**此阶段不读代码。** |
-| 2 | 代码库文档 | 以阶段 1 输出为指引，深入阅读源代码。生成包含 Mermaid 图表的综合代码库文档（13 个章节）和排序的攻击假设列表。 |
-| 3 | 自动扫描 | 运行 Slither 检测器（全量扫描、高危聚焦扫描、场景特定扫描）。将每个发现与阶段 2 文档交叉对比。 |
-| 4 | 定向代码审阅与分类 | 使用 24 项检查清单进行深度安全代码审阅。激活领域特定攻击手册。将发现分类为：已确认 / 疑似 / 误报。 |
-| 5 | PoC 与发现文档 | 为每个已确认/疑似发现同时编写 Foundry PoC 和发现报告。时间允许时编写不变量测试。 |
-| 6 | 最终报告组装 | 将发现组装为平台特定提交格式。严重性审查、去重、PoC 再验证。 |
+| 2 | 代码库文档 | 以阶段 1 输出为指引，深入阅读源代码。生成包含 Mermaid 图表的综合代码库文档（13 个章节）。 |
+| 3 | 攻击规划 | 基于阶段 1+2 输出规划攻击向量 — 不读源代码。分析资金流、访问控制缺口、领域特定模式和权限/管理风险。可选运行 Slither 检测器。 |
+| 4 | 验证与 PoC | 通过深入源代码验证攻击向量。为每个已确认漏洞同时编写 Foundry PoC 和发现报告。权限风险仅需报告无需 PoC。 |
+| 5 | 最终报告组装 | 将发现组装为平台特定提交格式。严重性审查、去重、PoC 再验证。 |
 
-**阶段 0-3 严格按顺序执行。** 阶段 1 通过 printer 建立结构模型（不读代码）。阶段 2 以阶段 1 为指引阅读源代码。阶段 3 对已充分理解的代码库运行检测器。阶段 4-6 是核心分析、PoC 和报告阶段。
+**阶段 0-2 严格按顺序执行。** 阶段 1 通过 printer 建立结构模型（不读代码）。阶段 2 以阶段 1 为指引阅读源代码。阶段 3 从文档层面规划攻击。阶段 4 验证并编写 PoC。阶段 5 组装报告。
 
 ## 安装
 
@@ -89,25 +88,35 @@ cp -r /path/to/smart-contract-auditor/smart-contract-auditor .claude/skills/smar
 ├── SKILL.md                                # 必需 — 技能入口
 └── resources/
     ├── tools/
-    │   ├── slither.md                      # 27 个 printer、99 个检测器、CLI 参数、Python API
+    │   ├── slither.md                      # 27 个 printer、99 个检测器、CLI 参数
     │   └── foundry.md                      # Forge CLI、cheatcode、cast、anvil、PoC 工作流
     ├── templates/
     │   ├── structural-summary.md           # 阶段 1 输出模板
     │   ├── codebase-report.md              # 阶段 2 输出模板（13 个章节）
+    │   ├── codebase-report-guide.md        # 阶段 2 填写方法论
+    │   ├── attack-plan.md                  # 阶段 3 输出模板
     │   ├── poc.md                          # 5 个 PoC 启动模板
     │   ├── code4rena.md                    # Code4rena 提交格式
     │   └── sherlock.md                     # Sherlock 提交格式
     ├── checklists/
+    │   ├── adversarial-framework.md        # 攻击思维框架
+    │   ├── code-reading-checklist.md       # 25 项安全代码审阅清单
     │   ├── non-standard-tokens.md          # 14 种非标准 ERC20 行为
-    │   └── domain-playbooks.md             # 10 种协议类型的攻击检查清单
+    │   ├── privilege-risk.md               # 权限角色枚举与密钥泄露分析
+    │   ├── domain-playbooks.md             # 领域特定攻击检查清单索引
+    │   └── playbooks/                      # 各领域攻击检查清单
+    │       ├── amm-dex.md
+    │       ├── vault-erc4626.md
+    │       ├── proxy-upgradeable.md
+    │       ├── lending-borrowing.md
+    │       └── other-playbooks.md
     └── phases/
         ├── phase-0-setup.md
         ├── phase-1-recon.md
         ├── phase-2-docs.md
-        ├── phase-3-scanning.md
-        ├── phase-4-analysis.md
-        ├── phase-5-findings.md
-        └── phase-6-report.md
+        ├── phase-3-attack-planning.md
+        ├── phase-4-verify-poc.md
+        └── phase-5-report.md
 ```
 
 ## 使用方法
@@ -130,7 +139,7 @@ cp -r /path/to/smart-contract-auditor/smart-contract-auditor .claude/skills/smar
 对这个代码库运行 slither，并为所有关键发现编写 PoC
 ```
 
-AI 将依次执行 7 个阶段：环境搭建、结构侦察、代码库文档、自动扫描、定向代码审阅与分类、PoC 开发和报告组装。
+AI 将依次执行 6 个阶段：环境搭建、结构侦察、代码库文档、攻击规划、验证与 PoC 开发、报告组装。
 
 ### 提交平台选择
 
@@ -143,34 +152,39 @@ AI 将依次执行 7 个阶段：环境搭建、结构侦察、代码库文档�
 | Immunefi | 计划中 |
 | HackerOne | 计划中 |
 
-默认使用 Code4rena。如需添加新平台，在 `resources/templates/` 中创建模板并更新 `SKILL.md` 阶段 0.6 中的表格。
+默认使用 Code4rena。如需添加新平台，在 `resources/templates/` 中创建模板并更新 `SKILL.md` 中的阶段 0 配置。
 
 ## 文件结构
 
 ```
 smart-contract-auditor/
-├── SKILL.md                              # 核心技能 — 7 阶段审计工作流（阶段 0-6）
+├── SKILL.md                              # 核心技能 — 6 阶段审计工作流（阶段 0-5）
 └── resources/
     ├── tools/
-    │   ├── slither.md                    # 27 个 printer、99 个检测器、CLI 参数、Python API、附加工具
+    │   ├── slither.md                    # 27 个 printer、99 个检测器、CLI 参数、附加工具
     │   └── foundry.md                    # Forge CLI、cheatcode、forge-std、cast、anvil、PoC 工作流
     ├── templates/
     │   ├── structural-summary.md         # 阶段 1 输出模板
     │   ├── codebase-report.md            # 阶段 2 输出模板（13 个章节，Mermaid 图表）
+    │   ├── codebase-report-guide.md      # 阶段 2 填写方法论
+    │   ├── attack-plan.md                # 阶段 3 输出模板（6 个章节）
     │   ├── poc.md                        # 5 个 Foundry PoC 启动模板
     │   ├── code4rena.md                  # Code4rena 提交格式与严重性指南
     │   └── sherlock.md                   # Sherlock 提交格式与去重模型
     ├── checklists/
+    │   ├── adversarial-framework.md      # 攻击思维与现代攻击模式
+    │   ├── code-reading-checklist.md     # 25 项安全代码审阅清单
     │   ├── non-standard-tokens.md        # 14 种非标准 ERC20 代币行为
-    │   └── domain-playbooks.md           # 领域特定攻击检查清单（10 种协议类型）
+    │   ├── privilege-risk.md             # 权限角色枚举与密钥泄露分析
+    │   ├── domain-playbooks.md           # 领域特定攻击检查清单索引
+    │   └── playbooks/                    # 各领域攻击检查清单（10 种协议类型）
     └── phases/
-        ├── phase-0-setup.md              # 环境搭建与范围发现
+        ├── phase-0-setup.md              # 环境搭建、范围发现、Slither 扫描选择
         ├── phase-1-recon.md              # 结构侦察（12 个 printer）
-        ├── phase-2-docs.md               # 代码库文档与假设列表
-        ├── phase-3-scanning.md           # Slither 自动检测器扫描
-        ├── phase-4-analysis.md           # 定向代码审阅与分类（24 项检查清单）
-        ├── phase-5-findings.md           # PoC 与发现文档
-        └── phase-6-report.md             # 最终报告组装
+        ├── phase-2-docs.md               # 代码库文档（13 章节模板）
+        ├── phase-3-attack-planning.md    # 攻击规划 + 权限风险分析
+        ├── phase-4-verify-poc.md         # 源代码验证 + PoC 开发
+        └── phase-5-report.md             # 最终报告组装
 ```
 
 ## 核心特性
@@ -185,7 +199,7 @@ smart-contract-auditor/
 
 ### 全面的工具参考
 
-`resources/tools/slither.md` 涵盖全部 27 个 printer、99 个检测器（含严重性/置信度）、CLI 参数、Python API 和已知局限性。`resources/tools/foundry.md` 涵盖 Forge CLI、所有 cheatcode 签名、forge-std 辅助函数、主网 fork、Anvil、Cast 和不变量测试。
+`resources/tools/slither.md` 涵盖全部 27 个 printer、99 个检测器（含严重性/置信度）、CLI 参数和已知局限性。`resources/tools/foundry.md` 涵盖 Forge CLI、所有 cheatcode 签名、forge-std 辅助函数、主网 fork、Anvil、Cast 和不变量测试。
 
 ### 检测器到 PoC 的映射
 

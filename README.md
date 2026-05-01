@@ -2,25 +2,26 @@
 
 **[English](README.md) | [中文](README_CN.md)**
 
-A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) custom skill that turns Claude into a structured smart contract security auditor. It uses **Slither** for static analysis and **Foundry** for Proof-of-Concept exploit development, following a 7-phase workflow (Phases 0-6) designed to minimize AI hallucination.
+A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) custom skill that turns Claude into a structured smart contract security auditor. It uses **Slither** for structural analysis and **Foundry** for Proof-of-Concept exploit development, following a 6-phase workflow (Phases 0-5) designed to minimize AI hallucination.
 
 ## Why This Skill?
 
 AI agents hallucinate when auditing smart contracts — they misread inheritance chains, fabricate access control assumptions, and generate broken PoCs. This skill solves that with a **tool-first, code-second** approach: the agent must build a verified structural model of the codebase using Slither's printers (machine-generated ground truth) *before* reading any source code.
 
+Slither vulnerability scanning (detectors) is **off by default** — detector noise can bias the AI toward false positives and away from deeper logic bugs. The user can opt in during Phase 0 when a broader mechanical sweep is desired.
+
 ## Workflow Overview
 
 | Phase | Name | What Happens |
 |-------|------|-------------|
-| 0 | Environment Setup | Detect project type, verify compilation, identify audit scenarios (DeFi, proxy, token, cross-chain, staking, transient storage), select submission platform |
+| 0 | Environment Setup | Detect project type, verify compilation, identify audit scenarios (DeFi, proxy, token, cross-chain, staking, transient storage), select submission platform, choose whether to enable Slither scanning |
 | 1 | Structural Reconnaissance | Run 12 Slither printers to map inheritance, entry points, function-to-state-variable relationships, storage layout, and access control. **No code reading.** |
-| 2 | Codebase Documentation | Dive into source code guided by Phase 1 outputs. Produce a comprehensive Mermaid-based codebase document (13 sections) and a ranked attack hypothesis list. |
-| 3 | Automated Scanning | Run Slither detectors (full scan, high-impact focused, scenario-specific). Contextualize every finding against Phase 2 documentation. |
-| 4 | Targeted Code Reading & Triage | Deep security-focused code reading with a 24-item checklist. Activate domain-specific playbooks. Classify findings as Confirmed / Potential / False Positive. |
-| 5 | PoC & Finding Documentation | Write Foundry PoC and finding report together per confirmed/potential finding. Invariant testing when time permits. |
-| 6 | Final Report Assembly | Assemble findings into platform-specific submission format. Severity review, dedup, PoC re-verification. |
+| 2 | Codebase Documentation | Dive into source code guided by Phase 1 outputs. Produce a comprehensive Mermaid-based codebase document (13 sections). |
+| 3 | Attack Planning | Plan attack vectors from Phase 1+2 outputs — no code reading. Analyze value flows, access control gaps, domain-specific patterns, and privilege/management risks. Optionally run Slither detectors. |
+| 4 | Verification & PoC | Verify attack vectors by diving deep into source code. Write Foundry PoC and finding report together per confirmed vulnerability. Privilege risks get write-ups without PoC. |
+| 5 | Final Report Assembly | Assemble findings into platform-specific submission format. Severity review, dedup, PoC re-verification. |
 
-**Phases 0-3 are strictly sequential.** Phase 1 builds a structural model via printers (no code reading). Phase 2 reads source code using Phase 1 as its guide. Phase 3 runs detectors against a codebase you already understand. Phases 4-6 are the core analysis, PoC, and reporting stages.
+**Phases 0-2 are strictly sequential.** Phase 1 builds a structural model via printers (no code reading). Phase 2 reads source code using Phase 1 as its guide. Phase 3 plans attacks from documentation. Phase 4 verifies and writes PoCs. Phase 5 assembles the report.
 
 ## Installation
 
@@ -89,25 +90,35 @@ If it doesn't appear, check that the folder structure is correct:
 ├── SKILL.md                                # required — skill entry point
 └── resources/
     ├── tools/
-    │   ├── slither.md                      # 27 printers, 99 detectors, CLI flags, Python API
+    │   ├── slither.md                      # 27 printers, 99 detectors, CLI flags
     │   └── foundry.md                      # Forge CLI, cheatcodes, cast, anvil, PoC workflow
     ├── templates/
     │   ├── structural-summary.md           # Phase 1 output template
     │   ├── codebase-report.md              # Phase 2 output template (13 sections)
+    │   ├── codebase-report-guide.md        # Phase 2 methodology
+    │   ├── attack-plan.md                  # Phase 3 output template
     │   ├── poc.md                          # 5 PoC starter templates
     │   ├── code4rena.md                    # Code4rena submission format
     │   └── sherlock.md                     # Sherlock submission format
     ├── checklists/
+    │   ├── adversarial-framework.md        # Attack thinking framework
+    │   ├── code-reading-checklist.md       # 25-item security checklist
     │   ├── non-standard-tokens.md          # 14 non-standard ERC20 behaviors
-    │   └── domain-playbooks.md             # Attack checklists for 10 protocol types
+    │   ├── privilege-risk.md               # Role enumeration & key compromise analysis
+    │   ├── domain-playbooks.md             # Domain-specific attack checklist index
+    │   └── playbooks/                      # Per-domain attack checklists
+    │       ├── amm-dex.md
+    │       ├── vault-erc4626.md
+    │       ├── proxy-upgradeable.md
+    │       ├── lending-borrowing.md
+    │       └── other-playbooks.md
     └── phases/
         ├── phase-0-setup.md
         ├── phase-1-recon.md
         ├── phase-2-docs.md
-        ├── phase-3-scanning.md
-        ├── phase-4-analysis.md
-        ├── phase-5-findings.md
-        └── phase-6-report.md
+        ├── phase-3-attack-planning.md
+        ├── phase-4-verify-poc.md
+        └── phase-5-report.md
 ```
 
 ## Usage
@@ -130,7 +141,7 @@ Audit this Foundry project for security vulnerabilities
 Run slither on this codebase and write PoCs for any critical findings
 ```
 
-The agent will walk through all 7 phases: environment setup, structural reconnaissance, codebase documentation, automated scanning, targeted code reading & triage, PoC development, and report assembly.
+The agent will walk through all 6 phases: environment setup, structural reconnaissance, codebase documentation, attack planning, verification with PoC development, and report assembly.
 
 ### Platform Selection
 
@@ -143,41 +154,67 @@ During Phase 0, the agent asks which submission platform to target. Currently su
 | Immunefi | Planned |
 | HackerOne | Planned |
 
-Default is Code4rena. To add a new platform, create a template in `resources/templates/` and update Phase 0.6 in `SKILL.md`.
+Default is Code4rena. To add a new platform, create a template in `resources/templates/` and update Phase 0 in `SKILL.md`.
+
+### Slither Scanning Decision
+
+During Phase 0, the agent asks whether to enable Slither vulnerability scanning:
+
+- **Default: OFF** — the agent plans attacks from structural analysis and documentation, then verifies by reading code and writing PoCs. This avoids detector noise biasing the analysis.
+- **Opt-in: ON** — Slither detectors run in Phase 3 and findings are appended to the attack plan. Useful for large codebases or when a broader mechanical sweep is desired.
+
+Slither **printers** (structural analysis) always run in Phase 1 regardless of this setting.
 
 ## File Structure
 
 ```
 smart-contract-auditor/
-├── SKILL.md                              # Core skill — 7-phase audit workflow (Phases 0-6)
+├── SKILL.md                              # Core skill — 6-phase audit workflow (Phases 0-5)
 └── resources/
     ├── tools/
-    │   ├── slither.md                    # 27 printers, 99 detectors, CLI flags, Python API, additional tools
+    │   ├── slither.md                    # 27 printers, 99 detectors, CLI flags
     │   └── foundry.md                    # Forge CLI, cheatcodes, forge-std, cast, anvil, PoC workflow
     ├── templates/
     │   ├── structural-summary.md         # Phase 1 output template
     │   ├── codebase-report.md            # Phase 2 output template (13 sections, Mermaid diagrams)
+    │   ├── codebase-report-guide.md      # Phase 2 population methodology
+    │   ├── attack-plan.md                # Phase 3 output template (6 sections)
     │   ├── poc.md                        # 5 Foundry PoC starter templates
     │   ├── code4rena.md                  # Code4rena submission format & severity guide
     │   └── sherlock.md                   # Sherlock submission format & dedup model
     ├── checklists/
+    │   ├── adversarial-framework.md      # Adversarial thinking & modern attack patterns
+    │   ├── code-reading-checklist.md     # 25-item security code reading checklist
     │   ├── non-standard-tokens.md        # 14 non-standard ERC20 token behaviors
-    │   └── domain-playbooks.md           # Domain-specific attack checklists (10 protocol types)
+    │   ├── privilege-risk.md             # Privilege role enumeration & key compromise analysis
+    │   ├── domain-playbooks.md           # Domain-specific attack checklists index
+    │   └── playbooks/                    # Per-domain attack checklists (10 protocol types)
     └── phases/
-        ├── phase-0-setup.md              # Environment setup & scope discovery
+        ├── phase-0-setup.md              # Environment setup, scope discovery, Slither opt-in
         ├── phase-1-recon.md              # Structural reconnaissance (12 printers)
-        ├── phase-2-docs.md               # Codebase documentation & hypothesis list
-        ├── phase-3-scanning.md           # Automated Slither detector scans
-        ├── phase-4-analysis.md           # Targeted code reading & triage (24-item checklist)
-        ├── phase-5-findings.md           # PoC & finding documentation
-        └── phase-6-report.md             # Final report assembly
+        ├── phase-2-docs.md               # Codebase documentation (13-section template)
+        ├── phase-3-attack-planning.md    # Attack planning from docs + privilege risk analysis
+        ├── phase-4-verify-poc.md         # Source code verification + PoC development
+        └── phase-5-report.md             # Final report assembly
 ```
 
 ## Key Features
 
 ### Anti-Hallucination Design
 
-The skill enforces strict phase ordering — Phase 0 sets up the environment, Phase 1 uses only Slither printers (AST-derived facts) to build a structural model before the agent reads any code. Phase 2 then reads source code with Phase 1 as its guide. If the agent's code reading later disagrees with printer output, the printer is treated as correct.
+The skill enforces strict phase ordering — Phase 0 sets up the environment, Phase 1 uses only Slither printers (AST-derived facts) to build a structural model before the agent reads any code. Phase 2 then reads source code with Phase 1 as its guide. If the agent's code reading later disagrees with printer output, the printer is treated as correct. Phase 4 requires PoC-driven verification — a finding without a passing PoC stays as "potential," not "confirmed."
+
+### Attack Planning Before Code Reading
+
+Phase 3 forces the agent to plan attack vectors from architecture-level documentation (user flows, value flows, access control matrices, invariants) before diving into source code. This prevents the common AI failure mode of getting lost in implementation details without a clear security thesis.
+
+### Privilege & Management Risk Analysis
+
+Beyond code vulnerabilities, Phase 3 includes systematic analysis of privileged roles: what each role can do, worst-case key compromise scenarios, existing mitigations (timelocks, multisigs, caps), and role escalation paths. These become Centralization findings in the final report.
+
+### Slither Scanning as Opt-In
+
+Slither vulnerability scanning (detectors) is off by default. Detector noise can bias the AI toward false positives and away from deeper logic bugs. When enabled, findings are appended to the attack plan alongside architecture-derived vectors, not used as the primary analysis driver.
 
 ### Modular Phase Architecture
 
@@ -185,7 +222,7 @@ Each phase has its own detailed instruction file in `resources/phases/`. Phases 
 
 ### Comprehensive Tool References
 
-`resources/tools/slither.md` covers all 27 printers, 99 detectors with severity/confidence, CLI flags, Python API, and known limitations. `resources/tools/foundry.md` covers Forge CLI, all cheatcode signatures, forge-std helpers, mainnet forking, Anvil, Cast, and invariant testing.
+`resources/tools/slither.md` covers all 27 printers, 99 detectors with severity/confidence, CLI flags, and known limitations. `resources/tools/foundry.md` covers Forge CLI, all cheatcode signatures, forge-std helpers, mainnet forking, Anvil, Cast, and invariant testing.
 
 ### Detector-to-PoC Mapping
 

@@ -2,20 +2,18 @@
 
 **Purpose:** Dive into the source code using Phase 1's structural model as your guide. Produce comprehensive codebase documentation that becomes the shared reference for all subsequent phases. This is where you build the mental model that drives scanning, code reading, PoC development, and reporting.
 
-**Gate:** Document covers all 13 sections from the template. Fact-Checking Checklist passes completely. No unverified claims. Ranked hypothesis list produced.
+**Gate:** Document covers all 13 sections from the template. Fact-Checking Checklist passes completely. No unverified claims.
 
 **Inputs:**
 - `audit-output/phase-1-recon/structural-summary.md` — your primary structural reference
-- `audit-output/phase-1-recon/preliminary-hypotheses.md` — structural-only hypothesis list to refine
 - `audit-output/phase-1-recon/coverage-report.txt` (if tests exist)
 - `audit-output/phase-1-recon/printers/` — raw printer files (fallback for details not in structural summary)
 - `.sol` files in scope
 
 **Outputs:**
 - `audit-output/phase-2-docs/codebase-overview.md` — comprehensive codebase documentation
-- `audit-output/phase-2-docs/hypothesis-list.md` — ranked attack hypothesis list
 
-**Checkpoint:** Present the codebase overview and refined hypothesis list to the user. Pause and wait for confirmation before proceeding to Phase 3.
+**Checkpoint:** Present the codebase overview to the user. Pause and wait for confirmation before proceeding to Phase 3.
 
 ---
 
@@ -33,7 +31,7 @@ Before diving into code, establish which contracts to read and in what order.
 
 1. **Start from the inheritance graph** in the structural summary (section 2). Read base contracts before derived contracts — you need to understand modifier behavior, storage layout, and internal functions before reading the contracts that inherit them.
 
-2. **Within that order, prioritize by the Phase 1 hypothesis ranking.** Contracts containing Critical/High-priority targets from `preliminary-hypotheses.md` get read first.
+2. **Within that order, prioritize contracts that handle value** (ETH/token transfers, minting, burning) and contracts with unguarded functions (structural summary section 4).
 
 3. **For large codebases (>15 contracts):** Do NOT attempt to read everything in one pass. Batch contracts into groups of 3-5 related contracts (e.g., "core vault + strategy + router", "governance + timelock"). Complete the template sections for each batch before moving to the next. Write intermediate results to disk.
 
@@ -99,40 +97,3 @@ Run through the Fact-Checking Checklist at the bottom of `resources/templates/co
 
 **Uncertainty handling:** Flag any unverified assumptions explicitly.
 
----
-
-## Step 6: Refine Attack Hypothesis List
-
-You now have both the structural model (Phase 1 printers) and deep protocol understanding (code reading). Start from `audit-output/phase-1-recon/preliminary-hypotheses.md` and produce a refined list.
-
-Write to **`audit-output/phase-2-docs/hypothesis-list.md`**.
-
-### Re-rank and expand the list:
-
-- Confirm or deprioritize each Phase 1 hypothesis based on code-level understanding.
-- Add new hypotheses discovered during code reading.
-- For each hypothesis, note which template sections provide supporting evidence.
-
-### Priority criteria:
-
-| Priority | Criteria |
-|----------|----------|
-| **Critical** | State-modifying, no modifiers, no require statements |
-| **High** | Handles ETH/token transfers with access control (verify guard correctness) |
-| **Medium** | Complex functions with many state writes and cross-function calls |
-| **Low** | View functions, well-guarded administrative functions |
-| **Deprioritized** | Structural signal appears benign after code reading — kept for Phase 4 re-validation |
-
-### Never Permanently Dismiss Hypotheses
-
-**Do NOT mark any hypothesis as "Resolved", "Invalid", or "False Positive" in Phase 2.** Phase 2 only has code-reading-level understanding — it lacks Phase 4's adversarial thinking framework, domain playbooks, cross-function pattern analysis, and impact amplification analysis.
-
-Mark seemingly-benign hypotheses as **Deprioritized** with your reasoning. They remain in the list and are mandatory re-validation targets in Phase 4. Format:
-
-```markdown
-| # | Target | Signal | Priority | Phase 2 Notes |
-|---|--------|--------|----------|---------------|
-| 24 | Registry.unregisterVault() | try/catch + balanceOf check | Deprioritized | Appears intentional safety — revisit in Phase 4 with donation/griefing lens |
-```
-
-Compare the refined list against the Phase 1 preliminary list: note which structural signals were confirmed, which were deprioritized (with justification), and what new targets emerged from code reading.

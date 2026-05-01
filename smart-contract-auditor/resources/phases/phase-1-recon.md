@@ -2,17 +2,16 @@
 
 **Purpose:** Build a complete, tool-verified structural model of the codebase using Slither printers. Do NOT read any `.sol` files during this phase.
 
-**Gate:** You can answer every structural question (contract count, inheritance hierarchy, function visibility, storage layout, access control modifiers, entry points) without reading code. Structural summary includes a printer output guide. All printer outputs validated as non-empty and error-free. Preliminary hypothesis list produced.
+**Gate:** You can answer every structural question (contract count, inheritance hierarchy, function visibility, storage layout, access control modifiers, entry points) without reading code. Structural summary includes a printer output guide. All printer outputs validated as non-empty and error-free.
 
 **Inputs:** Compiled codebase, Slither base flags from Phase 0.
 
 **Outputs:**
 - `audit-output/phase-1-recon/printers/` — one file per printer (12 total)
 - `audit-output/phase-1-recon/structural-summary.md`
-- `audit-output/phase-1-recon/preliminary-hypotheses.md`
 - `audit-output/phase-1-recon/coverage-report.txt` (if tests exist)
 
-**Checkpoint:** Present the structural summary and preliminary hypothesis list to the user. Pause and wait for confirmation before proceeding to Phase 2.
+**Checkpoint:** Present the structural summary to the user. Pause and wait for confirmation before proceeding to Phase 2.
 
 ---
 
@@ -97,7 +96,7 @@ forge coverage > audit-output/phase-1-recon/coverage-report.txt 2>&1
 
 If `forge coverage` fails (e.g., tests require RPC forking), note the failure and move on — this is informational, not blocking.
 
-Use coverage output to inform the hypothesis list: functions with zero or low coverage in critical contracts are higher-priority targets.
+Use coverage output to inform Phase 3 attack planning: functions with zero or low coverage in critical contracts are higher-priority targets.
 
 ---
 
@@ -110,41 +109,10 @@ This is NOT just an index — extract the most critical structural data into com
 1. **Codebase Snapshot** — metrics from `human-summary.txt`
 2. **Inheritance Tree** — compact text hierarchy from `inheritance.txt`
 3. **Entry Points & Access Control** — every external/public state-modifying function with modifiers, state writes, and auth checks. Extracted from `function-summary.txt` + `modifiers.txt` + `vars-and-auth.txt`.
-4. **Unguarded State-Modifying Functions** — cross-referenced from `function-summary.txt` + `modifiers.txt` + `require.txt`. Pre-identified for the hypothesis list.
+4. **Unguarded State-Modifying Functions** — cross-referenced from `function-summary.txt` + `modifiers.txt` + `require.txt`. Pre-identified as high-priority attack targets for Phase 3.
 5. **Storage Layout Overview** — per-contract slot layout from `variable-order.txt`
 6. **Printer Output Index** — pointers to raw files for detail lookups
 7. **Notes** — validation failures, warnings, coverage highlights
 
 For each section: read the listed printer file(s), extract the data into the structured format, then move on. Do NOT copy raw printer output verbatim — summarize into the tables.
 
----
-
-## Step 5: Produce Preliminary Hypothesis List
-
-Using ONLY printer output (no `.sol` file reading), produce a preliminary hypothesis list. Write to **`audit-output/phase-1-recon/preliminary-hypotheses.md`**.
-
-Scan the printer output for these structural signals:
-
-| Signal | Source Printer | Priority |
-|--------|---------------|----------|
-| Functions with NO modifiers AND state-modifying | `function-summary.txt`, `modifiers.txt` | Critical |
-| Functions with NO `require`/`assert` checks AND state-modifying | `require.txt`, `function-summary.txt` | Critical |
-| Functions handling ETH transfers (payable, `.call{value:}`, `.transfer`) | `function-summary.txt` | High |
-| Functions handling token transfers (`transferFrom`, `safeTransferFrom`, `mint`, `burn`) | `function-summary.txt` | High |
-| Complex cross-contract calls (multiple external calls in one function) | `call-graph*.dot`, `entry-points.txt` | High |
-| State-modifying functions missing `whenNotPaused` (if Pausable is used) | `not-pausable.txt` | Medium |
-| Zero or low test coverage (if coverage was run in Step 3) | `coverage-report.txt` | Medium |
-
-Format:
-
-```markdown
-# Preliminary Hypothesis List (Phase 1 — Structural Only)
-
-> This list is based solely on printer output. Phase 2 will refine it with code-level understanding.
-
-| # | Target (Contract.function) | Signal | Priority | Coverage |
-|---|---------------------------|--------|----------|----------|
-| 1 | [Contract.function()] | [No modifiers, state-modifying] | Critical | [Untested / N/A] |
-```
-
-This list is intentionally coarse — it identifies *where* to look, not *what* the bug is. Phase 2 code reading will validate, refine, and re-rank these hypotheses.

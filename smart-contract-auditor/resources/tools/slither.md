@@ -669,11 +669,11 @@ Understanding what Slither **cannot** do is as important as knowing what it can.
 |-----------|-----|------------|
 | **Cross-contract reentrancy** | Slither analyzes contracts individually; it doesn't track state flow through external call chains across multiple contracts | Manual code reading of cross-contract call sequences + Foundry PoC |
 | **Read-only reentrancy** | Reentrancy detectors focus on state-writing calls; `view`/`pure` function calls during reentrancy are invisible | Manual review of any protocol that reads external state (LP pricing, oracle views) |
-| **Logic bugs** | Slither matches AST patterns — it cannot reason about business logic, economic incentives, or intended vs actual behavior | Adversarial thinking (Phase 4.4), invariant testing |
+| **Logic bugs** | Slither matches AST patterns — it cannot reason about business logic, economic incentives, or intended vs actual behavior | Adversarial thinking (Phase 4 Step 2), invariant testing |
 | **Multi-transaction attack sequences** | Slither analyzes single-function execution paths; attacks requiring a specific sequence of transactions across blocks are invisible | Manual attack path construction + Foundry multi-step PoCs |
 | **Inline assembly semantics** | Slither can detect `assembly` usage but doesn't deeply analyze the Yul/EVM opcodes within assembly blocks | Manual review of every `assembly` block for correctness |
 | **`delegatecall` side effects** | `function-summary` printer reports variables read/written in the context of the calling contract, but `delegatecall` executes in the caller's storage context — the actual storage writes may differ | Cross-reference `variable-order` of both proxy and implementation; manually verify storage alignment |
-| **Token callback reentrancy** | ERC777 `tokensReceived`, ERC721 `onERC721Received`, ERC1155 `onERC1155Received` hooks create reentrant calls inside token transfer, invisible to Slither | Check `checklists/non-standard-tokens.md` §8 for token callback patterns |
+| **Token callback reentrancy** | ERC777 `tokensReceived`, ERC721 `onERC721Received`, ERC1155 `onERC1155Received` hooks create reentrant calls inside token transfer, invisible to Slither | Check `resources/checklists/non-standard-tokens.md` §8 for token callback patterns |
 | **Economic / game-theoretic exploits** | Flash loan sandwich attacks, MEV extraction, funding rate manipulation — Slither cannot model economic incentives | Manual analysis using domain-specific playbooks |
 | **Transient storage (EIP-1153)** | `TSTORE`/`TLOAD` are recent opcodes; Slither support may be incomplete | Manual review of all transient storage usage |
 

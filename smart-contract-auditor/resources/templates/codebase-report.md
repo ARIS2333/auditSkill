@@ -280,7 +280,7 @@ Only include if proxy/upgradeable pattern is used.
 
 ## 12. Key Invariants
 
-These are the rules that must NEVER be broken. When time permits in Phase 5, write `invariant_` tests for the most critical entries.
+These are the rules that must NEVER be broken. When time permits in Phase 4, write `invariant_` tests for the most critical entries.
 
 | # | Invariant | Enforced By |
 |---|-----------|------------|

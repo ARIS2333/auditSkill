@@ -6,16 +6,16 @@
 
 **Inputs:** Target codebase.
 
-**Outputs:** `audit-output/` directory structure, detected scenarios, Slither base flags, scope assessment.
+**Outputs:** `audit-output/` directory structure, detected scenarios, Slither base flags, scope assessment, Slither scanning decision.
 
-**Checkpoint:** Present scope assessment (contract count, SLOC estimate, detected scenarios, workflow intensity) to the user. Pause and wait for confirmation before proceeding to Phase 1.
+**Checkpoint:** Present scope assessment (contract count, SLOC estimate, detected scenarios, workflow intensity, Slither scanning decision) to the user. Pause and wait for confirmation before proceeding to Phase 1.
 
 ---
 
 ## Step 1: Create Output Directory
 
 ```bash
-mkdir -p audit-output/{phase-1-recon/printers/per-contract,phase-2-docs,phase-3-scanning,phase-4-analysis,phase-5-findings,phase-6-report}
+mkdir -p audit-output/{phase-1-recon/printers/per-contract,phase-2-docs,phase-3-planning,phase-4-findings,phase-5-report}
 ```
 
 ### Output Directory Structure
@@ -41,29 +41,26 @@ audit-output/
 │   │   ├── function-id.txt
 │   │   └── per-contract/          # (Large codebases >15 contracts)
 │   ├── structural-summary.md
-│   ├── preliminary-hypotheses.md
 │   └── coverage-report.txt        # (if tests exist)
 ├── phase-2-docs/
-│   ├── codebase-overview.md
-│   └── hypothesis-list.md
-├── phase-3-scanning/
-│   ├── slither-full-report.json
-│   ├── slither-high-report.json
-│   ├── slither-scenario.json
-│   ├── slither-clean-report.json   # (optional)
-│   └── scan-summary.md
-├── phase-4-analysis/
-│   ├── code-reading-notes.md
-│   └── triage.md
-├── phase-5-findings/
+│   └── codebase-overview.md
+├── phase-3-planning/
+│   ├── attack-plan.md             # Prioritized attack vectors + privilege risk analysis
+│   ├── slither-full-report.json   # (only if Slither scanning enabled)
+│   ├── slither-high-report.json   # (only if Slither scanning enabled)
+│   ├── slither-low-info.md        # (only if Slither scanning enabled)
+│   └── slither-scenario.json      # (only if Slither scanning enabled)
+├── phase-4-findings/
 │   ├── H-01/
 │   │   ├── H-01.t.sol
 │   │   └── H-01.md
 │   ├── M-01/
 │   │   ├── M-01.t.sol
 │   │   └── M-01.md
+│   ├── C-01/                      # Privilege/management risk (no PoC)
+│   │   └── C-01.md
 │   └── ...
-└── phase-6-report/
+└── phase-5-report/
     ├── final-report.md
     └── qa-report.md
 ```
@@ -71,7 +68,7 @@ audit-output/
 **Rules:**
 - Create `audit-output/` at project root.
 - Each phase writes outputs to its corresponding folder.
-- PoC test files in `phase-5-findings/` are also symlinked or copied to `test/audit/` so `forge test` can find them.
+- PoC test files in `phase-4-findings/` are also symlinked or copied to `test/audit/` so `forge test` can find them.
 - Intermediate `.md` files capture your reasoning — they are working documents, not deliverables.
 
 ## Step 2: Detect Project Type
@@ -133,7 +130,17 @@ Ask the user which platform. Default: Code4rena. Available templates:
 
 If the selected platform's template doesn't exist, inform the user and fall back to Code4rena format.
 
-## Step 9: Contest Pre-Flight (Competitive Audits)
+## Step 9: Slither Vulnerability Scanning Decision
+
+Ask the user whether to enable Slither vulnerability scanning (running Slither detectors to find potential bugs).
+
+- **Default: OFF.** Slither detector output can produce noise that biases analysis toward false positives, pulling focus away from deeper logic bugs.
+- **When useful:** Large codebases where mechanical issues (unchecked return values, reentrancy patterns) are likely, or when the auditor wants a broader initial sweep.
+- **What this controls:** Only Phase 3 Step 5 (Slither detector scans). Slither **printers** in Phase 1 always run regardless — they are structural analysis tools, not vulnerability detectors.
+
+Record the decision. Phase 3 will use it to determine whether to run detector scans.
+
+## Step 10: Contest Pre-Flight (Competitive Audits)
 
 Before starting analysis:
 1. **Read the contest README thoroughly** — known issues and out-of-scope items save wasted effort.

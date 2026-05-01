@@ -31,7 +31,7 @@ Your primary structural reference is **`audit-output/phase-1-recon/structural-su
 | 9. State Machine | — | `not-pausable.txt` | Yes — identify state transitions |
 | 10. External Dependencies | — | `call-graph*.dot` | Yes — identify failure modes |
 | 11. Upgrade & Migration | §5 Storage Layout | `variable-order.txt` | Yes — verify storage layout |
-| 12. Key Invariants | Synthesized from hypothesis list + code reading | — | Yes — identify protocol rules |
+| 12. Key Invariants | Synthesized from code reading + structural summary | — | Yes — identify protocol rules |
 | 13. Known Risks & Trust Assumptions | Code reading | — | Yes — assess trust boundaries |
 
 ---

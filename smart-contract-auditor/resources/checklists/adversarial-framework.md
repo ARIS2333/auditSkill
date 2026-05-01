@@ -41,7 +41,7 @@ Examples:
 - Found a rounding/dust issue in deposit math? → Check every function that reads or checks the rounded value — can leftover dust block a different operation (unregistration, migration, settlement)?
 - Found a missing access control on one setter? → Check all setters in the same contract and in sibling contracts.
 
-Run the relevant `grep` and review every hit, not just the ones already in your hypothesis list.
+Run the relevant `grep` and review every hit, not just the ones already in your attack plan.
 
 ---
 
@@ -93,7 +93,7 @@ When you have more functions than you can deeply review, prioritize:
 
 1. **Functions that move value** — ETH transfers, token transfers, minting, burning. These are where financial exploits live.
 2. **Functions with complex access control** — multi-role systems, timelocks, threshold checks. Misconfiguration here is high-severity.
-3. **Functions flagged by Phase 3 detectors** — even if you suspect false positive, verify.
+3. **Functions flagged by Slither detectors** (if scanning was enabled in Phase 3) — even if you suspect false positive, verify.
 4. **Functions with zero test coverage** — the developer didn't think about edge cases here.
 5. **Functions at trust boundaries** — anything that takes external input (user parameters, oracle data, cross-contract return values).
 

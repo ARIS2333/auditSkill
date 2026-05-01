@@ -1,6 +1,6 @@
 # Security Code Reading Checklist
 
-Apply every item to each function flagged by the Phase 2 hypothesis list and Phase 3 detectors. Work through systematically — don't skip items. Record observations in `audit-output/phase-4-analysis/code-reading-notes.md`.
+Apply every item to each function targeted by the Phase 3 attack plan. Work through systematically — don't skip items.
 
 ---
 

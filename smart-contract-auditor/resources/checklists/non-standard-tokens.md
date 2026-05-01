@@ -279,8 +279,8 @@ token.approve(spender, amount);
 
 ## Audit Integration
 
-During **Phase 0.4** (Detect Audit Scenarios), if the protocol accepts arbitrary ERC20 tokens or interacts with specific tokens from this list:
+During **Phase 0 Step 5** (Detect Audit Scenarios), if the protocol accepts arbitrary ERC20 tokens or interacts with specific tokens from this list:
 1. Flag the token behavior categories that apply
 2. During **Phase 4** code reading, check every token interaction against the relevant categories above
-3. For each match, classify as confirmed/potential per the Phase 4.6 triage framework
+3. For each match, classify as confirmed/potential per the Phase 4 triage framework
 4. Document token assumptions in the Phase 2 codebase overview (Section 13: Known Risks)

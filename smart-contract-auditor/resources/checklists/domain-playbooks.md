@@ -1,6 +1,6 @@
 # Domain-Specific Playbooks
 
-When Phase 0 Step 5 detects specific project types, activate the corresponding playbook(s) during Phase 4 Step 4. Each playbook is a separate file — **read only the ones that match the detected scenarios** to keep context focused.
+When Phase 0 Step 5 detects specific project types, activate the corresponding playbook(s) during Phase 3 (Attack Planning) Step 3 and Phase 4 (Verification & PoC) Step 2. Each playbook is a separate file — **read only the ones that match the detected scenarios** to keep context focused.
 
 ## Scenario-to-Playbook Mapping
 
@@ -23,5 +23,6 @@ When Phase 0 Step 5 detects specific project types, activate the corresponding p
 ## How to Use
 
 1. **Phase 0 Step 5** detects scenarios via grep signals.
-2. **Phase 4 Step 4** reads the matching playbook file(s) and applies each check to every relevant function.
-3. For each playbook item that flags a potential issue, classify it per Phase 4 Step 5 triage.
+2. **Phase 3 Step 3** reads the matching playbook file(s) and identifies potential attack vectors from documentation.
+3. **Phase 4 Step 2** applies each playbook check to relevant functions during code verification.
+4. For each playbook item that flags a potential issue, classify it per Phase 4 Step 2 triage.
